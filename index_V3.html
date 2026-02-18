@@ -1,0 +1,3369 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RINT — Le Langage du Futur · Atlas Studio</title>
+    <link rel="icon" type="image/x-icon" href="logo.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #05050f;
+            --bg1: #0b0b1a;
+            --bg2: #10101f;
+            --bg3: #181828;
+            --bg4: #1f1f32;
+            --border: rgba(255, 255, 255, 0.06);
+            --text: #e8e8f0;
+            --muted: #e0e0e0;
+            --accent: #4dffd2;
+            --accent2: #a78bfa;
+            --accent3: #ffc800;
+            --red: #ff5f6d;
+            --green: #4dffd2;
+            --radius: 16px;
+            /* code tokens */
+            --tk-kw: #c084fc;
+            --tk-type: #67e8f9;
+            --tk-fn: #4dffd2;
+            --tk-str: #86efac;
+            --tk-num: #fbbf24;
+            --tk-cm: #4b4b6a;
+            --tk-op: #94a3b8;
+            --tk-blt: #fbbf24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased
+        }
+
+        /* ── NOISE TEXTURE ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: .025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")
+        }
+
+        /* ── BG ORBS ── */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: .08
+        }
+
+        .orb-1 {
+            width: 700px;
+            height: 700px;
+            background: #4dffd2;
+            top: -200px;
+            left: -200px;
+            animation: o1 22s ease-in-out infinite alternate
+        }
+
+        .orb-2 {
+            width: 600px;
+            height: 600px;
+            background: #a78bfa;
+            top: 40%;
+            right: -250px;
+            animation: o2 28s ease-in-out infinite alternate
+        }
+
+        .orb-3 {
+            width: 500px;
+            height: 500px;
+            background: #ffc800;
+            bottom: 0;
+            left: 25%;
+            animation: o1 18s ease-in-out infinite alternate-reverse
+        }
+
+        @keyframes o1 {
+            to {
+                transform: translate(60px, 50px)
+            }
+        }
+
+        @keyframes o2 {
+            to {
+                transform: translate(-50px, 70px)
+            }
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(92%, 1000px);
+            height: 56px;
+            background: rgba(10, 10, 22, .88);
+            backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px 0 20px;
+            z-index: 9999;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .04)
+        }
+
+        .nav-logo {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .nav-logo img {
+            width: 24px;
+            height: 24px;
+            display: block;
+        }
+
+        .nav-logo .dot-accent {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s ease-in-out infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(77, 255, 210, .4)
+            }
+
+            50% {
+                opacity: .6;
+                box-shadow: 0 0 0 6px rgba(77, 255, 210, 0)
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2px
+        }
+
+        .nav-links button {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all .25s;
+            font-family: 'DM Sans', sans-serif
+        }
+
+        .nav-links button:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, .05)
+        }
+
+        .nav-links button.active {
+            color: var(--bg);
+            background: var(--text);
+            font-weight: 600
+        }
+
+        .nav-dl {
+            background: var(--accent) !important;
+            color: var(--bg) !important;
+            font-weight: 700 !important;
+            margin-left: 6px
+        }
+
+        .nav-dl:hover {
+            background: #30ffcb !important;
+            transform: scale(1.03)
+        }
+
+        /* ── PAGE SYSTEM ── */
+        .page {
+            display: none;
+            animation: pageIn .4s cubic-bezier(.2, .8, .2, 1) both
+        }
+
+        .page.active {
+            display: block
+        }
+
+        @keyframes pageIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* ── SHARED ── */
+        section {
+            position: relative;
+            z-index: 2
+        }
+
+        .container {
+            width: min(90%, 1040px);
+            margin: 0 auto
+        }
+
+        .divider {
+            width: min(90%, 1040px);
+            margin: 0 auto;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 70%, transparent)
+        }
+
+        .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 14px;
+            opacity: .8
+        }
+
+        .section-title {
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(26px, 3.5vw, 44px);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -.02em;
+            margin-bottom: 18px
+        }
+
+        .section-desc {
+            font-size: 16px;
+            color: var(--muted);
+            line-height: 1.75;
+            max-width: 560px
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(28px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            letter-spacing: .01em;
+            transition: all .25s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg)
+        }
+
+        .btn-primary:hover {
+            background: #30ffcb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(77, 255, 210, .25)
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border)
+        }
+
+        .btn-ghost:hover {
+            border-color: rgba(255, 255, 255, .2);
+            background: rgba(255, 255, 255, .03)
+        }
+
+        .btn-dl {
+            background: var(--accent);
+            color: var(--bg);
+            font-size: 16px;
+            padding: 18px 40px;
+            font-weight: 700
+        }
+
+        .btn-dl:hover {
+            background: #30ffcb;
+            transform: translateY(-3px);
+            box-shadow: 0 14px 40px rgba(77, 255, 210, .3)
+        }
+
+        /* Code tokens */
+        .kw {
+            color: var(--tk-kw)
+        }
+
+        .tp {
+            color: var(--tk-type)
+        }
+
+        .fn {
+            color: var(--tk-fn)
+        }
+
+        .st {
+            color: var(--tk-str)
+        }
+
+        .nm {
+            color: var(--tk-num)
+        }
+
+        .cm {
+            color: var(--tk-cm);
+            font-style: italic
+        }
+
+        .op {
+            color: var(--tk-op)
+        }
+
+        .bt {
+            color: var(--tk-blt)
+        }
+
+        .ln {
+            color: rgba(255, 255, 255, .12);
+            margin-right: 20px;
+            user-select: none;
+            font-size: 11px;
+            display: inline-block;
+            width: 22px;
+            text-align: right
+        }
+
+        /* IDE Window */
+        .ide-win {
+            background: #080814;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .02)
+        }
+
+        .ide-bar {
+            background: #0d0d1e;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .ide-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%
+        }
+
+        .ide-dot-r {
+            background: #ff5f56
+        }
+
+        .ide-dot-y {
+            background: #ffbd2e
+        }
+
+        .ide-dot-g {
+            background: #27c93f
+        }
+
+        .ide-name {
+            margin-left: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .ide-code {
+            padding: 22px 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.85;
+            color: var(--muted);
+            overflow-x: auto
+        }
+
+        .ide-status {
+            background: rgba(77, 255, 210, .05);
+            border-top: 1px solid rgba(77, 255, 210, .08);
+            padding: 8px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            display: flex;
+            gap: 24px;
+            align-items: center
+        }
+
+        /* ────────────────────────────────────────────────
+   PAGE 1 — HOME
+──────────────────────────────────────────────── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 130px 0 80px
+        }
+
+        .hero-inner {
+            width: min(90%, 1040px);
+            margin: 0 auto
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(77, 255, 210, .07);
+            border: 1px solid rgba(77, 255, 210, .18);
+            border-radius: 100px;
+            padding: 6px 18px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .1em;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            font-family: 'JetBrains Mono', monospace;
+            animation: fadeUp .7s cubic-bezier(.2, .8, .2, 1) both
+        }
+
+        .hero-badge .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s ease-in-out infinite
+        }
+
+        .hero h1 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(46px, 7vw, 88px);
+            font-weight: 900;
+            line-height: .98;
+            letter-spacing: -.035em;
+            margin-bottom: 30px;
+            animation: fadeUp .7s .08s cubic-bezier(.2, .8, .2, 1) both
+        }
+
+        .hero h1 .h-accent {
+            color: var(--accent)
+        }
+
+        .hero h1 .h-dim {
+            color: var(--muted);
+            font-weight: 300;
+            font-style: italic
+        }
+
+        .hero-sub {
+            font-size: 18px;
+            line-height: 1.75;
+            color: var(--muted);
+            max-width: 560px;
+            margin-bottom: 48px;
+            font-weight: 300;
+            animation: fadeUp .7s .16s cubic-bezier(.2, .8, .2, 1) both
+        }
+
+        .hero-sub strong {
+            color: var(--text);
+            font-weight: 500
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            animation: fadeUp .7s .24s cubic-bezier(.2, .8, .2, 1) both
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 48px;
+            margin-top: 72px;
+            padding-top: 48px;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+            animation: fadeUp .7s .32s cubic-bezier(.2, .8, .2, 1) both
+        }
+
+        .hstat .num {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        .hstat .lbl {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px
+        }
+
+        .ide-section {
+            padding: 120px 0
+        }
+
+        .ide-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 56px;
+            align-items: center;
+            margin-top: 64px
+        }
+
+        .feat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px
+        }
+
+        .feat-item {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 24px;
+            transition: all .35s;
+            cursor: default;
+            position: relative;
+            overflow: hidden
+        }
+
+        .feat-item::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--accent);
+            transform: scaleY(0);
+            transition: transform .35s;
+            transform-origin: bottom
+        }
+
+        .feat-item:hover {
+            border-color: rgba(77, 255, 210, .2);
+            transform: translateX(4px)
+        }
+
+        .feat-item:hover::after {
+            transform: scaleY(1)
+        }
+
+        .feat-icon {
+            font-size: 18px;
+            margin-bottom: 10px
+        }
+
+        .feat-item h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text)
+        }
+
+        .feat-item p {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.6
+        }
+
+        .code-showcase {
+            padding: 80px 0 120px
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 56px
+        }
+
+        @media(max-width:768px) {
+
+            .showcase-grid,
+            .ide-layout,
+            .hw-layout {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .code-card {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all .35s
+        }
+
+        .code-card:hover {
+            border-color: rgba(77, 255, 210, .12);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .5)
+        }
+
+        .cc-head {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .cc-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            letter-spacing: .06em;
+            padding: 3px 10px;
+            border-radius: 100px;
+            background: rgba(77, 255, 210, .08);
+            color: var(--accent);
+            border: 1px solid rgba(77, 255, 210, .14)
+        }
+
+        .cc-code {
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12.5px;
+            line-height: 1.85;
+            color: var(--muted)
+        }
+
+        .hw-section {
+            padding: 80px 0 120px
+        }
+
+        .hw-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 72px;
+            align-items: center;
+            margin-top: 56px
+        }
+
+        .info-block {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            padding: 18px 20px;
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px
+        }
+
+        .info-block h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text)
+        }
+
+        .info-block p {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5
+        }
+
+        /* ────────────────────────────────────────────────
+   PAGE 2 — LANGUAGE REFERENCE
+──────────────────────────────────────────────── */
+        .lang-page {
+            padding: 130px 0 80px
+        }
+
+        .lang-hero {
+            text-align: center;
+            margin-bottom: 80px
+        }
+
+        .lang-hero h1 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 900;
+            letter-spacing: -.04em;
+            line-height: 1.05;
+            margin-bottom: 20px
+        }
+
+        .lang-hero p {
+            font-size: 17px;
+            color: var(--muted);
+            max-width: 540px;
+            margin: 0 auto;
+            line-height: 1.7
+        }
+
+        .lang-nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 72px
+        }
+
+        .lang-nav a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 8px 16px;
+            border-radius: 100px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            text-decoration: none;
+            transition: all .2s;
+            letter-spacing: .04em
+        }
+
+        .lang-nav a:hover {
+            color: var(--accent);
+            border-color: rgba(77, 255, 210, .3);
+            background: rgba(77, 255, 210, .06)
+        }
+
+        .lang-section {
+            margin-bottom: 80px;
+            scroll-margin-top: 100px
+        }
+
+        .lang-section-title {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .lang-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border)
+        }
+
+        .lang-section-desc {
+            font-size: 15px;
+            color: var(--muted);
+            margin-bottom: 24px;
+            line-height: 1.7
+        }
+
+        .code-block {
+            background: #080814;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.85;
+            color: var(--muted);
+            overflow-x: auto;
+            position: relative;
+            margin-bottom: 16px
+        }
+
+        .code-block-label {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            opacity: .5
+        }
+
+        .type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 20px 0
+        }
+
+        .type-card {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px
+        }
+
+        .type-card .type-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--tk-type);
+            margin-bottom: 4px
+        }
+
+        .type-card .type-desc {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.5
+        }
+
+        .type-card .type-ex {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--tk-str);
+            margin-top: 8px;
+            background: rgba(255, 255, 255, .04);
+            padding: 4px 8px;
+            border-radius: 4px
+        }
+
+        .func-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0
+        }
+
+        .func-table th {
+            text-align: left;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .func-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, .03);
+            vertical-align: top
+        }
+
+        .func-table td:first-child {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--tk-fn);
+            white-space: nowrap
+        }
+
+        .func-table td:nth-child(2) {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .func-table td:last-child {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--tk-str)
+        }
+
+        .func-table tr:hover td {
+            background: rgba(255, 255, 255, .02)
+        }
+
+        .op-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0
+        }
+
+        .op-card {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            text-align: center
+        }
+
+        .op-card .op-sym {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--tk-op)
+        }
+
+        .op-card .op-name {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px
+        }
+
+        .note-box {
+            background: rgba(77, 255, 210, .05);
+            border: 1px solid rgba(77, 255, 210, .15);
+            border-left: 3px solid var(--accent);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.7
+        }
+
+        .note-box strong {
+            color: var(--accent)
+        }
+
+        .warn-box {
+            background: rgba(255, 200, 0, .05);
+            border: 1px solid rgba(255, 200, 0, .15);
+            border-left: 3px solid var(--accent3);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.7
+        }
+
+        .warn-box strong {
+            color: var(--accent3)
+        }
+
+        /* ────────────────────────────────────────────────
+   PAGE 3 — FEATURES (V6.4 accurate)
+──────────────────────────────────────────────── */
+        .features-page {
+            padding: 130px 0 80px
+        }
+
+        .features-hero {
+            text-align: center;
+            margin-bottom: 72px
+        }
+
+        .features-hero h1 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(36px, 5vw, 68px);
+            font-weight: 900;
+            letter-spacing: -.04em;
+            line-height: 1.05;
+            margin-bottom: 20px
+        }
+
+        .features-hero p {
+            font-size: 17px;
+            color: var(--muted);
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.7
+        }
+
+        .feat-stats {
+            display: flex;
+            justify-content: center;
+            gap: 56px;
+            margin-bottom: 72px;
+            flex-wrap: wrap
+        }
+
+        .fstat {
+            text-align: center
+        }
+
+        .fstat .n {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        .fstat .l {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 6px;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .themes-row {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            margin-bottom: 64px
+        }
+
+        .themes-row h3 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px
+        }
+
+        .themes-row p {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 20px
+        }
+
+        .theme-chips {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        .tc {
+            padding: 8px 20px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .tc-noir {
+            background: #1a0d2e;
+            color: #c792ea;
+            border: 1px solid #3d1a6a
+        }
+
+        .tc-void {
+            background: #060f14;
+            color: #00d9ff;
+            border: 1px solid #004e69
+        }
+
+        .tc-mid {
+            background: #0c1222;
+            color: #5890ff;
+            border: 1px solid #1a3060
+        }
+
+        .tc-for {
+            background: #0a1a12;
+            color: #40c97a;
+            border: 1px solid #1a4d30
+        }
+
+        .tc-ember {
+            background: #1a0d06;
+            color: #ff6b35;
+            border: 1px solid #6a2810
+        }
+
+        .feat-categories {
+            display: flex;
+            flex-direction: column;
+            gap: 64px
+        }
+
+        .feat-cat-title {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: .04em;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .feat-cat-title::before {
+            content: '';
+            width: 20px;
+            height: 2px;
+            background: var(--accent)
+        }
+
+        .feat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px
+        }
+
+        .fp {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            transition: all .3s
+        }
+
+        .fp:hover {
+            border-color: rgba(77, 255, 210, .15);
+            background: rgba(77, 255, 210, .03)
+        }
+
+        .fp.hi {
+            border-color: rgba(77, 255, 210, .18);
+            background: rgba(77, 255, 210, .04)
+        }
+
+        .fp.hi .fp-title {
+            color: var(--accent)
+        }
+
+        .fp-ico {
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-top: 1px
+        }
+
+        .fp-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text)
+        }
+
+        .fp-desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.55
+        }
+
+        .fp-tag {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 100px;
+            background: rgba(255, 255, 255, .06);
+            color: var(--muted);
+            margin-top: 6px;
+            letter-spacing: .06em
+        }
+
+        .shortcuts-section {
+            margin-top: 72px
+        }
+
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 10px;
+            margin-top: 24px
+        }
+
+        .shortcut {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px
+        }
+
+        .sk-action {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .sk-keys {
+            display: flex;
+            gap: 4px
+        }
+
+        .sk-key {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 4px;
+            padding: 3px 8px;
+            color: var(--text)
+        }
+
+        /* ────────────────────────────────────────────────
+   PAGE 4 — DOWNLOAD
+──────────────────────────────────────────────── */
+        .dl-page {
+            padding: 130px 0 80px
+        }
+
+        .dl-hero {
+            text-align: center;
+            margin-bottom: 80px
+        }
+
+        .dl-hero h1 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(36px, 5vw, 68px);
+            font-weight: 900;
+            letter-spacing: -.04em;
+            line-height: 1.05;
+            margin-bottom: 20px
+        }
+
+        .dl-hero h1 span {
+            color: var(--accent)
+        }
+
+        .dl-hero p {
+            font-size: 17px;
+            color: var(--muted);
+            max-width: 480px;
+            margin: 0 auto;
+            line-height: 1.7
+        }
+
+        .dl-main {
+            background: rgba(77, 255, 210, .04);
+            border: 1px solid rgba(77, 255, 210, .15);
+            border-radius: 24px;
+            padding: 48px;
+            text-align: center;
+            margin-bottom: 48px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .dl-main::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent)
+        }
+
+        .dl-ver-badge {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 6px 18px;
+            border-radius: 100px;
+            background: rgba(77, 255, 210, .1);
+            color: var(--accent);
+            border: 1px solid rgba(77, 255, 210, .2);
+            margin-bottom: 24px;
+            letter-spacing: .1em
+        }
+
+        .dl-main h2 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -.02em
+        }
+
+        .dl-main p {
+            color: var(--muted);
+            margin-bottom: 32px;
+            font-size: 15px
+        }
+
+        .dl-meta {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 24px;
+            flex-wrap: wrap
+        }
+
+        .dl-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .dl-meta-item .ico {
+            font-size: 16px
+        }
+
+        .dl-requirements {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 48px
+        }
+
+        .dl-requirements h3 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px
+        }
+
+        .req-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px
+        }
+
+        .req-item {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px
+        }
+
+        .req-item .ri-label {
+            font-size: 11px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 6px
+        }
+
+        .req-item .ri-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text)
+        }
+
+        .dl-versions {
+            margin-bottom: 48px
+        }
+
+        .dl-versions h3 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 24px
+        }
+
+        .versions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .version-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 24px
+        }
+
+        .version-row.latest {
+            background: rgba(77, 255, 210, .04);
+            border-color: rgba(77, 255, 210, .15)
+        }
+
+        .vr-info {
+            display: flex;
+            align-items: center;
+            gap: 16px
+        }
+
+        .vr-num {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 16px;
+            font-weight: 700
+        }
+
+        .vr-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 100px;
+            letter-spacing: .08em
+        }
+
+        .vr-tag-new {
+            background: rgba(77, 255, 210, .1);
+            color: var(--accent);
+            border: 1px solid rgba(77, 255, 210, .2)
+        }
+
+        .vr-tag-stable {
+            background: rgba(255, 255, 255, .06);
+            color: var(--muted);
+            border: 1px solid var(--border)
+        }
+
+        .vr-date {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .vr-notes {
+            font-size: 13px;
+            color: var(--muted);
+            max-width: 400px
+        }
+
+        .vr-dl {
+            padding: 10px 24px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all .2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none
+        }
+
+        .vr-dl-main {
+            background: var(--accent);
+            color: var(--bg)
+        }
+
+        .vr-dl-main:hover {
+            background: #30ffcb
+        }
+
+        .vr-dl-ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border)
+        }
+
+        .vr-dl-ghost:hover {
+            border-color: rgba(255, 255, 255, .2)
+        }
+
+        .dl-install {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 48px
+        }
+
+        .dl-install h3 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px
+        }
+
+        .install-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 16px
+        }
+
+        .install-step {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start
+        }
+
+        .step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(77, 255, 210, .1);
+            border: 1px solid rgba(77, 255, 210, .2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Unbounded', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+            flex-shrink: 0
+        }
+
+        .step-content h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px
+        }
+
+        .step-content p {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.6
+        }
+
+        .step-content code {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, .06);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--accent)
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            border-top: 1px solid var(--border)
+        }
+
+        footer h2 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(28px, 4vw, 48px);
+            font-weight: 900;
+            letter-spacing: -.03em;
+            margin-bottom: 16px
+        }
+
+        footer h2 span {
+            color: var(--accent)
+        }
+
+        footer p {
+            font-size: 16px;
+            color: var(--muted);
+            margin-bottom: 36px
+        }
+
+        .footer-meta {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 48px;
+            font-size: 13px;
+            color: var(--muted);
+            flex-wrap: wrap
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- ── NAV ── -->
+    <nav>
+        <div class="nav-logo">
+            <img src="logo.ico" alt="RINT Logo">
+            RINT
+        </div>
+        <div class="nav-links">
+            <button class="active" onclick="showPage('home',this)">Accueil</button>
+            <button onclick="showPage('lang',this)">Langage</button>
+            <button onclick="showPage('features',this)">Features</button>
+            <button class="nav-dl btn" onclick="showPage('download',this)">⬇ Télécharger</button>
+        </div>
+    </nav>
+
+    <!-- ================================================================
+     PAGE 1 — HOME
+================================================================ -->
+    <div id="page-home" class="page active">
+
+        <section class="hero">
+            <div class="hero-inner">
+                <div class="hero-badge">
+                    <div class="pulse-dot"></div>Atlas Studio · Nouveau langage
+                </div>
+                <h1>
+                    RINT.<br>
+                    <span class="h-accent">Contrôle total.</span><br>
+                    <span class="h-dim">Zéro friction.</span>
+                </h1>
+                <p class="hero-sub">
+                    Un langage <strong>bas niveau expressif</strong>, conçu pour le hardware, les drones et la
+                    performance.
+                    Avec un IDE professionnel qui en fait <strong>plus que VS Code</strong>.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary" onclick="showPage('download')">⬇ &nbsp;Télécharger v6.4</a>
+                    <a class="btn btn-ghost" onclick="showPage('lang')">📖 &nbsp;Documentation</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="hstat">
+                        <div class="num">35+</div>
+                        <div class="lbl">Features IDE</div>
+                    </div>
+                    <div class="hstat">
+                        <div class="num">5</div>
+                        <div class="lbl">Thèmes</div>
+                    </div>
+                    <div class="hstat">
+                        <div class="num">v6.4</div>
+                        <div class="lbl">Version actuelle</div>
+                    </div>
+                    <div class="hstat">
+                        <div class="num">0€</div>
+                        <div class="lbl">Gratuit</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <section class="ide-section">
+            <div class="container">
+                <div class="tag">// L'IDE</div>
+                <h2 class="section-title">Studio-grade.<br>Pas de compromis.</h2>
+                <div class="ide-layout">
+                    <div class="feat-list">
+                        <div class="feat-item">
+                            <div class="feat-icon">🔍</div>
+                            <h3>Syntax Highlighting + Linting Live</h3>
+                            <p>Coloration sémantique complète avec détection d'erreurs et suggestions de correction
+                                automatique en temps réel.</p>
+                        </div>
+                        <div class="feat-item">
+                            <div class="feat-icon">🤖</div>
+                            <h3>Autocomplete Intelligent</h3>
+                            <p>200+ completions avec documentation inline. Suggestions contextuelles après point (`.`)
+                                ou Ctrl+Espace.</p>
+                        </div>
+                        <div class="feat-item">
+                            <div class="feat-icon">⚡</div>
+                            <h3>Terminal Intégré Réel</h3>
+                            <p>Exécution de commandes système réelles via subprocess. Historique, `cd`, et support
+                                complet de votre shell.</p>
+                        </div>
+                        <div class="feat-item">
+                            <div class="feat-icon">🧠</div>
+                            <h3>Memory Monitor + Profiler</h3>
+                            <p>Graphe de consommation mémoire en temps réel pendant l'exécution. Métriques de complexité
+                                cyclomatique.</p>
+                        </div>
+                    </div>
+                    <div class="ide-win">
+                        <div class="ide-bar">
+                            <div class="ide-dot ide-dot-r"></div>
+                            <div class="ide-dot ide-dot-y"></div>
+                            <div class="ide-dot ide-dot-g"></div>
+                            <span class="ide-name">main.rint — RINT Studio v6.4</span>
+                        </div>
+                        <div class="ide-code">
+                            <div><span class="ln">1</span><span class="cm">// RINT Studio v6.4 — Demo</span></div>
+                            <div><span class="ln">2</span><span class="kw">use</span> <span class="bt">System</span>(*)
+                            </div>
+                            <div><span class="ln">3</span><span class="kw">use</span> <span class="bt">Audio</span>(*)
+                            </div>
+                            <div><span class="ln">4</span>&nbsp;</div>
+                            <div><span class="ln">5</span><span class="tp">string</span> nom = <span
+                                    class="st">"RINT"</span></div>
+                            <div><span class="ln">6</span><span class="tp">int</span> version = <span
+                                    class="nm">6</span></div>
+                            <div><span class="ln">7</span><span class="tp">wave</span> son = <span
+                                    class="bt">Audio</span>.<span class="fn">load</span>(path=<span
+                                    class="st">"demo.wav"</span>)</div>
+                            <div><span class="ln">8</span>&nbsp;</div>
+                            <div><span class="ln">9</span><span class="kw">func</span> <span
+                                    class="fn">saluer</span>(name) {</div>
+                            <div><span class="ln">10</span>&nbsp;&nbsp;<span class="bt">console</span>.<span
+                                    class="fn">print</span>(<span class="kw">f</span><span class="st">"Bonjour,
+                                    {name}!"</span>)</div>
+                            <div><span class="ln">11</span>&nbsp;&nbsp;<span class="kw">return</span> <span
+                                    class="nm">true</span></div>
+                            <div><span class="ln">12</span>}</div>
+                            <div><span class="ln">13</span>&nbsp;</div>
+                            <div><span class="ln">14</span><span class="fn">saluer</span>(nom)</div>
+                        </div>
+                        <div class="ide-status">
+                            <span>✓ 0 erreur</span><span>⚡ 1 ms</span><span>● RAM: 0.2 KB</span><span>🎨 Thème:
+                                Noir</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <section class="code-showcase">
+            <div class="container">
+                <div class="tag">// PUISSANCE TECHNIQUE</div>
+                <h2 class="section-title">RINT parle le langage<br>des machines.</h2>
+                <p class="section-desc">Gestion mémoire manuelle, hardware natif, virtualisation — le contrôle bas
+                    niveau avec une syntaxe propre.</p>
+                <div class="showcase-grid">
+                    <div class="code-card">
+                        <div class="cc-head">
+                            <div class="cc-title">🧠 Gestion Mémoire Manuelle</div><span class="badge">MEM</span>
+                        </div>
+                        <div class="cc-code">
+                            <span class="cm">// Allocation sur la stack</span>
+                            <span class="fn">alloc</span>(type=<span class="st">"stack"</span>, name=<span
+                                class="st">"buf"</span>,
+                            &nbsp;&nbsp;size=<span class="st">"bit:32"</span>) <span class="tp">string</span> buf =
+                            <span class="st">"data"</span>
+
+                            <span class="fn">memcpy</span>(buf <span class="kw">to</span> backup)
+                            <span class="fn">realloc</span>(name=<span class="st">"buf"</span>, size=<span
+                                class="st">"bit:64"</span>)
+                            <span class="fn">memset</span>(name=<span class="st">"buf"</span>, value=<span
+                                class="st">"0"</span>)
+                        </div>
+                    </div>
+                    <div class="code-card">
+                        <div class="cc-head">
+                            <div class="cc-title">🔄 Contrôle de Flux</div><span class="badge">FLOW</span>
+                        </div>
+                        <div class="cc-code">
+                            <span class="cm">// Boucle conditionnelle event-driven</span>
+                            <span class="tp">bool</span> actif = <span class="nm">true</span>
+
+                            <span class="kw">when</span> actif == <span class="nm">false</span> {
+                            &nbsp;&nbsp;<span class="fn">save</span>(name=<span class="st">"partie"</span>)
+                            }
+
+                            <span class="kw">repeat</span> time(<span class="nm">10</span>) {
+                            &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">log</span>(f<span
+                                class="st">"tick {i}"</span>)
+                            }
+                        </div>
+                    </div>
+                    <div class="code-card">
+                        <div class="cc-head">
+                            <div class="cc-title">🖥 Virtualisation Système</div><span class="badge">SYS</span>
+                        </div>
+                        <div class="cc-code">
+                            <span class="kw">sys</span> VM = <span class="bt">System</span>.<span
+                                class="fn">virtual.new</span>(
+                            &nbsp;&nbsp;ram=<span class="st">"mb:16"</span>, cpu=<span class="st">"core:1"</span>
+                            )
+                            VM.<span class="fn">virtual.config</span>(
+                            &nbsp;&nbsp;priority=<span class="st">"low"</span>,
+                            &nbsp;&nbsp;auto_reboot=<span class="nm">true</span>
+                            )
+                            VM.<span class="fn">run</span>() { <span class="bt">console</span>.<span
+                                class="fn">log</span>(<span class="st">"isolé"</span>) }
+                        </div>
+                    </div>
+                    <div class="code-card">
+                        <div class="cc-head">
+                            <div class="cc-title">🎵 Audio & Turtle</div><span class="badge">AV</span>
+                        </div>
+                        <div class="cc-code">
+                            <span class="kw">use</span> <span class="bt">Audio</span>(*) &nbsp;<span class="cm">//
+                                moteur audio</span>
+                            <span class="tp">wave</span> s = <span class="bt">Audio</span>.<span
+                                class="fn">load</span>(path=<span class="st">"song.wav"</span>)
+                            <span class="bt">Audio</span>.<span class="fn">play</span>(s)
+
+                            <span class="cm">// Graphisme Turtle</span>
+                            <span class="kw">repeat</span> time(<span class="nm">4</span>) {
+                            &nbsp;&nbsp;<span class="bt">Turtle</span>.<span class="fn">move</span>(<span
+                                class="nm">100</span>)
+                            &nbsp;&nbsp;<span class="bt">Turtle</span>.<span class="fn">right</span>(<span
+                                class="nm">90</span>)
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <section class="hw-section">
+            <div class="container">
+                <div class="tag">// HARDWARE & ROBOTIQUE</div>
+                <h2 class="section-title">Du code au monde réel.</h2>
+                <div class="hw-layout">
+                    <div>
+                        <p class="section-desc" style="margin-bottom:28px">Que vous soyez sur Arduino, ESP32, ou un
+                            drone Voltige — RINT parle nativement le langage de vos machines.</p>
+                        <div class="info-block">
+                            <div style="font-size:20px;flex-shrink:0">🤖</div>
+                            <div>
+                                <h4>Arduino & Microcontrôleurs</h4>
+                                <p>GPIO, I²C, UART. Zéro overhead, contrôle direct du matériel.</p>
+                            </div>
+                        </div>
+                        <div class="info-block">
+                            <div style="font-size:20px;flex-shrink:0">🚁</div>
+                            <div>
+                                <h4>Drone Voltige</h4>
+                                <p>Protocoles de vol, capteurs, télémétrie VTOL intégrés nativement.</p>
+                            </div>
+                        </div>
+                        <div class="info-block">
+                            <div style="font-size:20px;flex-shrink:0">🔌</div>
+                            <div>
+                                <h4>Auto-détection de port</h4>
+                                <p>Le runtime détecte vos périphériques automatiquement. Plug &amp; code.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ide-win">
+                        <div class="ide-bar">
+                            <div class="ide-dot ide-dot-r"></div>
+                            <div class="ide-dot ide-dot-y"></div>
+                            <div class="ide-dot ide-dot-g"></div>
+                            <span class="ide-name">hardware.rint</span>
+                        </div>
+                        <div class="ide-code">
+                            <div><span class="ln">1</span><span class="kw">use</span> <span class="fn">hardware</span>()
+                                <span class="kw">as</span> hard()
+                            </div>
+                            <div><span class="ln">2</span>&nbsp;</div>
+                            <div><span class="ln">3</span><span class="bt">hardware</span>.<span class="fn">new</span>(
+                            </div>
+                            <div><span class="ln">4</span>&nbsp;&nbsp;board=<span class="st">"arduino"</span>,</div>
+                            <div><span class="ln">5</span>&nbsp;&nbsp;model=<span class="st">"uno"</span>, name=<span
+                                    class="st">"projet"</span></div>
+                            <div><span class="ln">6</span>)</div>
+                            <div><span class="ln">7</span><span class="bt">hardware</span>.<span
+                                    class="fn">config</span>(</div>
+                            <div><span class="ln">8</span>&nbsp;&nbsp;port=hardware.port.<span
+                                    class="fn">autodetect</span>()</div>
+                            <div><span class="ln">9</span>)</div>
+                            <div><span class="ln">10</span>&nbsp;</div>
+                            <div><span class="ln">11</span><span class="kw">when</span> hard.<span
+                                    class="fn">read</span>(pin=<span class="nm">9</span>) == <span
+                                    class="nm">true</span> {</div>
+                            <div><span class="ln">12</span>&nbsp;&nbsp;hard.<span class="fn">set</span>(pin=<span
+                                    class="nm">10</span>, digit=<span class="nm">true</span>)</div>
+                            <div><span class="ln">13</span>&nbsp;&nbsp;<span class="bt">console</span>.<span
+                                    class="fn">log</span>(<span class="st">"Capteur ON"</span>)</div>
+                            <div><span class="ln">14</span>}</div>
+                        </div>
+                        <div class="ide-status"><span>✓ Connecté — COM3</span><span>⚡ Arduino UNO</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="container">
+                <div class="tag" style="justify-content:center;display:flex;margin-bottom:16px">// GET STARTED</div>
+                <h2>Prêt à coder en <span>RINT</span> ?</h2>
+                <p>RINT Studio v6.4 — Windows — Gratuit — Open IDE</p>
+                <a href="RINT_Studio_v6.4.exe" download class="btn btn-dl">⬇ &nbsp;Télécharger RINT Studio v6.4.exe</a>
+                <div class="footer-meta">
+                    <span>© 2025 Léandro BOFFY</span><span>RINT Language</span><span>Atlas Studio</span><span></span>
+                </div>
+            </div>
+        </footer>
+
+    </div><!-- /page-home -->
+
+
+    <!-- ================================================================
+     PAGE 2 — LANGUAGE REFERENCE
+================================================================ -->
+    <div id="page-lang" class="page">
+        <section class="lang-page">
+            <div class="container">
+                <div class="lang-hero">
+                    <div class="tag" style="display:block;text-align:center;margin-bottom:14px">// RÉFÉRENCE COMPLÈTE
+                    </div>
+                    <h1>Le Langage <span style="color:var(--accent)">RINT</span></h1>
+                    <p>Tout ce que vous devez savoir pour écrire du code RINT — de Hello World à la gestion mémoire bas
+                        niveau.</p>
+                </div>
+
+                <nav class="lang-nav">
+                    <a href="#bases">Bases</a>
+                    <a href="#types">Types</a>
+                    <a href="#operateurs">Opérateurs</a>
+                    <a href="#conditions">Conditions</a>
+                    <a href="#boucles">Boucles</a>
+                    <a href="#fonctions">Fonctions</a>
+                    <a href="#memoire">Mémoire</a>
+                    <a href="#console">Console I/O</a>
+                    <a href="#hardware">Hardware</a>
+                    <a href="#audio">Audio</a>
+                    <a href="#turtle">Turtle</a>
+                    <a href="#system">System</a>
+                </nav>
+
+                <!-- ── BASES ── -->
+                <div id="bases" class="lang-section">
+                    <div class="lang-section-title">01 · Bases</div>
+                    <p class="lang-section-desc">RINT est un langage typé, à syntaxe propre, avec des accolades pour les
+                        blocs. Pas de points-virgules obligatoires. Les commentaires commencent par <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-fn);font-size:12px">//</code>.
+                    </p>
+                    <div class="code-block">
+                        <span class="cm">// Votre premier programme RINT</span>
+                        <span class="bt">console</span>.<span class="fn">print</span>(<span class="st">"Hello
+                            World!"</span>)
+
+                        <span class="cm">// Déclaration de variables</span>
+                        <span class="tp">int</span> age = <span class="nm">25</span>
+                        <span class="tp">string</span> prenom = <span class="st">"Alice"</span>
+                        <span class="tp">bool</span> actif = <span class="nm">true</span>
+                        <span class="tp">float</span> pi = <span class="nm">3.14159</span>
+
+                        <span class="cm">// F-string (interpolation)</span>
+                        <span class="bt">console</span>.<span class="fn">print</span>(<span class="kw">f</span><span
+                            class="st">"Bonjour {prenom}, tu as {age} ans"</span>)
+                        <div class="code-block-label">hello.rint</div>
+                    </div>
+                    <div class="note-box"><strong>Règle d'or :</strong> Les variables doivent être déclarées avec leur
+                        type explicite (<code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-fn);font-size:12px">int</code>,
+                        <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-fn);font-size:12px">string</code>…)
+                        ou avec <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-fn);font-size:12px">auto</code>
+                        pour l'inférence.
+                    </div>
+                </div>
+
+                <!-- ── TYPES ── -->
+                <div id="types" class="lang-section">
+                    <div class="lang-section-title">02 · Types de Variables</div>
+                    <p class="lang-section-desc">RINT est fortement typé. Voici tous les types disponibles.</p>
+                    <div class="type-grid">
+                        <div class="type-card">
+                            <div class="type-name">int</div>
+                            <div class="type-desc">Entier 32 bits signé</div>
+                            <div class="type-ex">int x = 42</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">float</div>
+                            <div class="type-desc">Nombre décimal</div>
+                            <div class="type-ex">float pi = 3.14</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">string</div>
+                            <div class="type-desc">Chaîne de caractères</div>
+                            <div class="type-ex">string s = "abc"</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">bool</div>
+                            <div class="type-desc">Booléen (true/false)</div>
+                            <div class="type-ex">bool ok = true</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">list</div>
+                            <div class="type-desc">Liste de valeurs</div>
+                            <div class="type-ex">list l = [1,2,3]</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">dict</div>
+                            <div class="type-desc">Dictionnaire clé/valeur</div>
+                            <div class="type-ex">dict d = {}</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">wave</div>
+                            <div class="type-desc">Fichier audio chargé</div>
+                            <div class="type-ex">wave s = Audio.load()</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">unit</div>
+                            <div class="type-desc">Valeur avec unité</div>
+                            <div class="type-ex">unit v = "km:160"</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">sys</div>
+                            <div class="type-desc">Instance système/VM</div>
+                            <div class="type-ex">sys vm = System.virtual.new()</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">byte</div>
+                            <div class="type-desc">Octet brut (8 bits)</div>
+                            <div class="type-ex">byte b = 0xFF</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">char</div>
+                            <div class="type-desc">Caractère unique</div>
+                            <div class="type-ex">char c = 'A'</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">auto</div>
+                            <div class="type-desc">Inférence de type</div>
+                            <div class="type-ex">auto x = 42</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">void</div>
+                            <div class="type-desc">Absence de valeur</div>
+                            <div class="type-ex">func f() → void</div>
+                        </div>
+                        <div class="type-card">
+                            <div class="type-name">const</div>
+                            <div class="type-desc">Constante immuable</div>
+                            <div class="type-ex">const MAX = 100</div>
+                        </div>
+                    </div>
+                    <div class="code-block">
+                        <span class="cm">// Exemples de déclarations</span>
+                        <span class="tp">int</span> score = <span class="nm">0</span>
+                        <span class="tp">float</span> temperature = <span class="nm">36.6</span>
+                        <span class="tp">string</span> message = <span class="st">"Bienvenue"</span>
+                        <span class="tp">bool</span> connected = <span class="nm">false</span>
+                        <span class="tp">list</span> notes = [<span class="st">"F#"</span>, <span
+                            class="st">"C#"</span>, <span class="st">"A.3"</span>]
+                        <span class="tp">unit</span> vitesse = <span class="st">"km:160"</span>
+                        <span class="tp">auto</span> valeur = <span class="nm">42</span> <span class="cm">// inféré
+                            comme int</span>
+
+                        <span class="cm">// Réassignation et opérateurs composés</span>
+                        score += <span class="nm">10</span>
+                        score -= <span class="nm">5</span>
+                        score *= <span class="nm">2</span>
+                        score /= <span class="nm">3</span>
+                    </div>
+                </div>
+
+                <!-- ── OPÉRATEURS ── -->
+                <div id="operateurs" class="lang-section">
+                    <div class="lang-section-title">03 · Opérateurs</div>
+                    <p class="lang-section-desc">RINT supporte les opérateurs arithmétiques, de comparaison et logiques.
+                    </p>
+                    <div class="op-grid">
+                        <div class="op-card">
+                            <div class="op-sym">+</div>
+                            <div class="op-name">Addition</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">-</div>
+                            <div class="op-name">Soustraction</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">*</div>
+                            <div class="op-name">Multiplication</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">/</div>
+                            <div class="op-name">Division</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">==</div>
+                            <div class="op-name">Égalité</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">!=</div>
+                            <div class="op-name">Inégalité</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">&lt;</div>
+                            <div class="op-name">Inférieur</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">&gt;</div>
+                            <div class="op-name">Supérieur</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">&lt;=</div>
+                            <div class="op-name">Inf. ou égal</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">&gt;=</div>
+                            <div class="op-name">Sup. ou égal</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">and</div>
+                            <div class="op-name">ET logique</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">or</div>
+                            <div class="op-name">OU logique</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">not</div>
+                            <div class="op-name">NOT logique</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">+=</div>
+                            <div class="op-name">Ajout/assign</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">-=</div>
+                            <div class="op-name">Sous./assign</div>
+                        </div>
+                        <div class="op-card">
+                            <div class="op-sym">*=</div>
+                            <div class="op-name">Mult./assign</div>
+                        </div>
+                    </div>
+                    <div class="code-block">
+                        <span class="tp">int</span> a = <span class="nm">10</span>
+                        <span class="tp">int</span> b = <span class="nm">3</span>
+
+                        <span class="kw">if</span> a > b <span class="kw">and</span> b != <span class="nm">0</span> {
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">print</span>(<span class="st">"a
+                            est plus grand et b non nul"</span>)
+                        }
+
+                        <span class="kw">if</span> <span class="kw">not</span> (a == b) {
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">print</span>(<span class="st">"a et
+                            b sont différents"</span>)
+                        }
+                    </div>
+                </div>
+
+                <!-- ── CONDITIONS ── -->
+                <div id="conditions" class="lang-section">
+                    <div class="lang-section-title">04 · Conditions</div>
+                    <p class="lang-section-desc">RINT supporte <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-kw);font-size:12px">if</code>,
+                        <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-kw);font-size:12px">else if</code>,
+                        <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-kw);font-size:12px">else</code>,
+                        et le puissant <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-kw);font-size:12px">when</code>
+                        event-driven.
+                    </p>
+                    <div class="code-block">
+                        <span class="tp">int</span> age = <span class="nm">25</span>
+
+                        <span class="cm">// if / else if / else classique</span>
+                        <span class="kw">if</span> age > <span class="nm">20</span> {
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">print</span>(<span class="st">"Plus
+                            vieux que 20 ans"</span>)
+                        }
+                        <span class="kw">else if</span> age == <span class="nm">25</span> {
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">print</span>(<span class="st">"A
+                            exactement 25 ans"</span>)
+                        }
+                        <span class="kw">else</span> {
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">print</span>(<span
+                            class="st">"Moins de 20 ans"</span>)
+                        }
+
+                        <span class="cm">// Conditions composées</span>
+                        <span class="kw">if</span> age > <span class="nm">20</span> <span class="kw">or</span> age ==
+                        <span class="nm">25</span> {
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">print</span>(<span
+                            class="st">"Condition remplie"</span>)
+                        }
+
+                        <span class="kw">if</span> age >= <span class="nm">18</span> <span class="kw">and</span> age <=
+                            <span class="nm">30</span> {
+                            &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">print</span>(<span
+                                class="st">"Jeune adulte"</span>)
+                            }
+                            <div class="code-block-label">conditions.rint</div>
+                    </div>
+                    <div class="code-block">
+                        <span class="cm">// when — event-driven (surveille en permanence)</span>
+                        <span class="tp">bool</span> continuer_partie = <span class="nm">true</span>
+
+                        <span class="cm">// S'exécute UNE SEULE fois quand la condition devient vraie</span>
+                        <span class="kw">when</span> continuer_partie == <span class="nm">false</span> {
+                        &nbsp;&nbsp;<span class="fn">save</span>(name=<span class="st">"jeu"</span>)
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">log</span>(<span class="st">"Partie
+                            sauvegardée !"</span>)
+                        }
+
+                        <span class="cm">// when avec hardware (capteur)</span>
+                        <span class="kw">when</span> hard.<span class="fn">read</span>(pin=<span class="nm">9</span>) ==
+                        <span class="nm">true</span> {
+                        &nbsp;&nbsp;hard.<span class="fn">set</span>(pin=<span class="nm">10</span>, digit=<span
+                            class="nm">true</span>)
+                        }
+                        <div class="code-block-label">when.rint</div>
+                    </div>
+                    <div class="note-box"><strong>when vs if :</strong> <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-fn);font-size:12px">if</code>
+                        est évalué une fois. <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-fn);font-size:12px">when</code>
+                        surveille en permanence et se déclenche dès que la condition devient vraie — parfait pour les
+                        événements hardware et les états de programme.</div>
+                </div>
+
+                <!-- ── BOUCLES ── -->
+                <div id="boucles" class="lang-section">
+                    <div class="lang-section-title">05 · Boucles</div>
+                    <p class="lang-section-desc">Trois types de boucles : <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-kw);font-size:12px">while</code>,
+                        <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-kw);font-size:12px">repeat time(N)</code>,
+                        et <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-kw);font-size:12px">when</code>
+                        combiné avec <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-kw);font-size:12px">while true</code>.
+                    </p>
+                    <div class="code-block">
+                        <span class="cm">// While — boucle conditionnelle</span>
+                        <span class="tp">int</span> x = <span class="nm">10</span>
+                        <span class="kw">while</span> x > <span class="nm">0</span> {
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">print</span>(<span
+                            class="kw">f</span><span class="st">"x = {x}"</span>)
+                        &nbsp;&nbsp;x -= <span class="nm">1</span>
+                        }
+
+                        <span class="cm">// While true — boucle infinie</span>
+                        <span class="kw">while</span> <span class="nm">true</span> {
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">print</span>(<span
+                            class="st">"tourne..."</span>)
+                        }
+
+                        <span class="cm">// repeat time(N) — répète exactement N fois</span>
+                        <span class="kw">repeat</span> time(<span class="nm">3</span>) {
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">print</span>(<span
+                            class="st">"."</span>)
+                        }
+                        <span class="cm">// sortie: . . .</span>
+
+                        <span class="cm">// Carré avec Turtle (4 fois 90°)</span>
+                        <span class="kw">repeat</span> time(<span class="nm">4</span>) {
+                        &nbsp;&nbsp;<span class="bt">Turtle</span>.<span class="fn">move</span>(<span
+                            class="nm">100</span>)
+                        &nbsp;&nbsp;<span class="bt">Turtle</span>.<span class="fn">right</span>(<span
+                            class="nm">90</span>)
+                        }
+                        <div class="code-block-label">boucles.rint</div>
+                    </div>
+                    <div class="warn-box"><strong>Protection anti-boucle infinie :</strong> L'interpréteur RINT Studio
+                        arrête automatiquement toute boucle après 10 000 itérations pour éviter le gel de l'IDE.</div>
+                </div>
+
+                <!-- ── FONCTIONS ── -->
+                <div id="fonctions" class="lang-section">
+                    <div class="lang-section-title">06 · Fonctions</div>
+                    <p class="lang-section-desc">Les fonctions se déclarent avec <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-kw);font-size:12px">func</code>,
+                        acceptent des paramètres, et retournent une valeur avec <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-kw);font-size:12px">return</code>.
+                    </p>
+                    <div class="code-block">
+                        <span class="cm">// Déclaration d'une fonction</span>
+                        <span class="kw">func</span> <span class="fn">verification</span>(a, b) {
+                        &nbsp;&nbsp;<span class="kw">return</span> a + b
+                        }
+
+                        <span class="cm">// Fonction avec logique</span>
+                        <span class="kw">func</span> <span class="fn">fibonacci</span>(n) {
+                        &nbsp;&nbsp;<span class="tp">int</span> a = <span class="nm">0</span>
+                        &nbsp;&nbsp;<span class="tp">int</span> b = <span class="nm">1</span>
+                        &nbsp;&nbsp;<span class="kw">repeat</span> time(n) {
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="tp">int</span> tmp = b
+                        &nbsp;&nbsp;&nbsp;&nbsp;b = a + b
+                        &nbsp;&nbsp;&nbsp;&nbsp;a = tmp
+                        &nbsp;&nbsp;}
+                        &nbsp;&nbsp;<span class="kw">return</span> a
+                        }
+
+                        <span class="cm">// Appel de fonctions</span>
+                        <span class="tp">int</span> result = <span class="fn">verification</span>(<span
+                            class="nm">10</span>, <span class="nm">5</span>)
+                        <span class="tp">int</span> fib10 = <span class="fn">fibonacci</span>(<span
+                            class="nm">10</span>)
+                        <span class="bt">console</span>.<span class="fn">print</span>(<span class="kw">f</span><span
+                            class="st">"fib(10) = {fib10}"</span>)
+
+                        <span class="cm">// Fonction de sauvegarde (exemple du doc officiel)</span>
+                        <span class="kw">func</span> <span class="fn">save</span>(name) {
+                        &nbsp;&nbsp;save.name == name
+                        }
+                        <div class="code-block-label">fonctions.rint</div>
+                    </div>
+                    <div class="note-box"><strong>Pas de typage de retour explicite</strong> — RINT infère le type de
+                        retour automatiquement. Les fonctions sont collectées lors du premier passage, donc l'ordre de
+                        déclaration n'a pas d'importance.</div>
+                </div>
+
+                <!-- ── MÉMOIRE ── -->
+                <div id="memoire" class="lang-section">
+                    <div class="lang-section-title">07 · Gestion Mémoire</div>
+                    <p class="lang-section-desc">RINT permet de gérer la mémoire explicitement, comme en C/C++. Stack,
+                        heap, copie et initialisation de blocs mémoire.</p>
+                    <div class="code-block">
+                        <span class="cm">// Allocation sur la stack (locale, rapide)</span>
+                        <span class="fn">alloc</span>(type=<span class="st">"stack"</span>, name=<span
+                            class="st">"nom"</span>, size=<span class="st">"bit:32"</span>) <span
+                            class="tp">string</span> nom = <span class="st">"blabla"</span>
+
+                        <span class="cm">// Allocation sur le heap (globale, dynamique)</span>
+                        <span class="fn">alloc</span>(type=<span class="st">"heap"</span>, name=<span
+                            class="st">"buffer"</span>, size=<span class="st">"bit:128"</span>) <span
+                            class="tp">string</span> buffer = <span class="st">""</span>
+
+                        <span class="cm">// memcpy — copie rapide (attention aux chevauchements)</span>
+                        <span class="fn">memcpy</span>(nom <span class="kw">to</span> backup)
+
+                        <span class="cm">// memmove — copie sûre même si les zones se chevauchent</span>
+                        <span class="fn">memmove</span>(nom <span class="kw">to</span> backup)
+
+                        <span class="cm">// realloc — redimensionner la mémoire</span>
+                        <span class="fn">realloc</span>(name=<span class="st">"nom"</span>, size=<span
+                            class="st">"bit:64"</span>)
+
+                        <span class="cm">// memset — initialiser/réinitialiser avec une valeur</span>
+                        <span class="fn">memset</span>(name=<span class="st">"nom"</span>, value=<span
+                            class="st">"0"</span>)
+                        <div class="code-block-label">memory.rint</div>
+                    </div>
+                    <table class="func-table">
+                        <tr>
+                            <th>Fonction</th>
+                            <th>Description</th>
+                            <th>Exemple</th>
+                        </tr>
+                        <tr>
+                            <td>alloc()</td>
+                            <td>Alloue de la mémoire sur stack ou heap</td>
+                            <td>alloc(type="stack", name="x", size="bit:32")</td>
+                        </tr>
+                        <tr>
+                            <td>memcpy()</td>
+                            <td>Copie un bloc mémoire vers une destination</td>
+                            <td>memcpy(src to dst)</td>
+                        </tr>
+                        <tr>
+                            <td>memmove()</td>
+                            <td>Copie sûre même avec chevauchement</td>
+                            <td>memmove(src to dst)</td>
+                        </tr>
+                        <tr>
+                            <td>realloc()</td>
+                            <td>Redimensionne un bloc mémoire existant</td>
+                            <td>realloc(name="x", size="bit:64")</td>
+                        </tr>
+                        <tr>
+                            <td>memset()</td>
+                            <td>Initialise toute la mémoire d'une variable</td>
+                            <td>memset(name="x", value="0")</td>
+                        </tr>
+                    </table>
+                    <div class="warn-box"><strong>Attention :</strong> <code
+                            style="font-family:'JetBrains Mono',monospace;font-size:12px">memcpy</code> peut provoquer
+                        des bugs si les zones se chevauchent. Préférez <code
+                            style="font-family:'JetBrains Mono',monospace;font-size:12px">memmove</code> si vous n'êtes
+                        pas sûr. Après <code
+                            style="font-family:'JetBrains Mono',monospace;font-size:12px">realloc</code>, les références
+                        liées peuvent être invalidées.</div>
+                </div>
+
+                <!-- ── CONSOLE ── -->
+                <div id="console" class="lang-section">
+                    <div class="lang-section-title">08 · Console I/O</div>
+                    <p class="lang-section-desc">Toutes les interactions avec la console passent par l'objet <code
+                            style="font-family:'JetBrains Mono',monospace;color:var(--tk-blt);font-size:12px">console</code>.
+                    </p>
+                    <table class="func-table">
+                        <tr>
+                            <th>Fonction</th>
+                            <th>Description</th>
+                            <th>Exemple</th>
+                        </tr>
+                        <tr>
+                            <td>console.print()</td>
+                            <td>Affiche dans la sortie standard</td>
+                            <td>console.print("Hello")</td>
+                        </tr>
+                        <tr>
+                            <td>console.log()</td>
+                            <td>Log vers le panneau dédié (ou stdout)</td>
+                            <td>console.log("debug")</td>
+                        </tr>
+                        <tr>
+                            <td>console.error()</td>
+                            <td>Affiche une erreur (rouge)</td>
+                            <td>console.error("Échec")</td>
+                        </tr>
+                        <tr>
+                            <td>console.ask()</td>
+                            <td>Demande une saisie utilisateur</td>
+                            <td>string r = console.ask("Nom :")</td>
+                        </tr>
+                        <tr>
+                            <td>console.read()</td>
+                            <td>Lit la console (ligne ou plage)</td>
+                            <td>console.read(ln=10)</td>
+                        </tr>
+                    </table>
+                    <div class="code-block">
+                        <span class="cm">// Affichage simple</span>
+                        <span class="bt">console</span>.<span class="fn">print</span>(<span class="st">"Hello
+                            World!"</span>)
+                        <span class="bt">console</span>.<span class="fn">log</span>(<span class="st">"message de
+                            log"</span>)
+                        <span class="bt">console</span>.<span class="fn">error</span>(<span class="st">"quelque chose a
+                            échoué"</span>)
+
+                        <span class="cm">// Saisie utilisateur — méthode 1 (directe)</span>
+                        <span class="tp">string</span> reponse = <span class="bt">console</span>.<span
+                            class="fn">ask</span>(<span class="st">"installation (o/n) : "</span>)
+
+                        <span class="cm">// Saisie utilisateur — méthode 2 (séparée)</span>
+                        <span class="bt">console</span>.<span class="fn">ask</span>(<span class="st">"installation (o/n)
+                            : "</span>)
+                        <span class="tp">string</span> reponse = <span class="bt">console</span>.<span
+                            class="fn">read</span>()
+
+                        <span class="cm">// Lecture avancée de la console</span>
+                        <span class="bt">console</span>.<span class="fn">read</span>(ln=<span class="nm">10</span>)
+                        <span class="cm">// lire ligne 10</span>
+                        <span class="bt">console</span>.<span class="fn">read</span>(all) <span class="cm">// lire
+                            tout</span>
+                        <span class="bt">console</span>.<span class="fn">read</span>(ln=<span class="st">"10:15"</span>)
+                        <span class="cm">// lire lignes 10 à 15</span>
+                        <span class="bt">console</span>.<span class="fn">read</span>(ln=[<span
+                            class="nm">10</span>,<span class="nm">22</span>,<span class="nm">44</span>]) <span
+                            class="cm">// lire lignes spécifiques</span>
+
+                        <span class="cm">// Interpolation avec f-string</span>
+                        <span class="tp">string</span> nom = <span class="st">"Alice"</span>
+                        <span class="tp">int</span> score = <span class="nm">42</span>
+                        <span class="bt">console</span>.<span class="fn">print</span>(<span class="kw">f</span><span
+                            class="st">"Score de {nom} : {score} points"</span>)
+                        <div class="code-block-label">console.rint</div>
+                    </div>
+                </div>
+
+                <!-- ── HARDWARE ── -->
+                <div id="hardware" class="lang-section">
+                    <div class="lang-section-title">09 · Hardware</div>
+                    <p class="lang-section-desc">RINT s'interface directement avec Arduino, ESP32, et les drones Voltige
+                        via la bibliothèque hardware native.</p>
+                    <div class="code-block">
+                        <span class="cm">// Import du module hardware</span>
+                        <span class="kw">use</span> <span class="fn">hardware</span>() <span class="kw">as</span> hard()
+
+                        <span class="cm">// Déclarer un microcontrôleur</span>
+                        <span class="bt">hardware</span>.<span class="fn">new</span>(
+                        &nbsp;&nbsp;board=<span class="st">"arduino"</span>,
+                        &nbsp;&nbsp;model=<span class="st">"uno"</span>,
+                        &nbsp;&nbsp;name=<span class="st">"mon_projet"</span>
+                        )
+
+                        <span class="cm">// Configurer le port (auto ou manuel)</span>
+                        <span class="bt">hardware</span>.<span class="fn">config</span>(
+                        &nbsp;&nbsp;port=hardware.port.<span class="fn">autodetect</span>()
+                        )
+                        <span class="cm">// ou port="COM3" sur Windows, "/dev/ttyUSB0" Linux</span>
+
+                        <span class="cm">// Vitesse de communication</span>
+                        <span class="bt">hardware</span>.<span class="fn">config</span>(
+                        &nbsp;&nbsp;port=hardware.port.<span class="fn">autodetect</span>(),
+                        &nbsp;&nbsp;speed=<span class="nm">9600</span>
+                        )
+
+                        <span class="cm">// Lire/écrire des pins</span>
+                        <span class="kw">when</span> hard.<span class="fn">read</span>(pin=<span class="nm">9</span>) ==
+                        <span class="nm">true</span> {
+                        &nbsp;&nbsp;hard.<span class="fn">set</span>(pin=<span class="nm">10</span>, digit=<span
+                            class="nm">true</span>)
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">log</span>(<span
+                            class="st">"Capteur activé !"</span>)
+                        }
+
+                        <span class="cm">// Drone Voltige</span>
+                        <span class="bt">hardware</span>.<span class="fn">new</span>(
+                        &nbsp;&nbsp;board=<span class="st">"voltige"</span>, model=<span class="st">"vtol-1"</span>,
+                        name=<span class="st">"drone"</span>
+                        )
+                        <div class="code-block-label">hardware.rint</div>
+                    </div>
+                </div>
+
+                <!-- ── AUDIO ── -->
+                <div id="audio" class="lang-section">
+                    <div class="lang-section-title">10 · Audio</div>
+                    <p class="lang-section-desc">La bibliothèque Audio permet de charger et jouer des fichiers audio
+                        directement en RINT.</p>
+                    <div class="code-block">
+                        <span class="kw">use</span> <span class="bt">Audio</span>(*)
+
+                        <span class="cm">// Charger un fichier audio (type wave)</span>
+                        <span class="tp">wave</span> son = <span class="bt">Audio</span>.<span
+                            class="fn">load</span>(path=<span class="st">"musique.wav"</span>)
+                        <span class="tp">wave</span> effet = <span class="bt">Audio</span>.<span
+                            class="fn">load</span>(path=<span class="st">"click.mp3"</span>)
+
+                        <span class="cm">// Lire un son</span>
+                        <span class="bt">Audio</span>.<span class="fn">play</span>(son)
+
+                        <span class="cm">// Lire en boucle</span>
+                        <span class="bt">Audio</span>.<span class="fn">play</span>(son, loop=<span
+                            class="nm">true</span>)
+
+                        <span class="cm">// Liste de notes musicales</span>
+                        <span class="tp">list</span> notes = [<span class="st">"F#"</span>, <span
+                            class="st">"C#"</span>, <span class="st">"A.3"</span>]
+                        <div class="code-block-label">audio.rint</div>
+                    </div>
+                </div>
+
+                <!-- ── TURTLE ── -->
+                <div id="turtle" class="lang-section">
+                    <div class="lang-section-title">11 · Turtle Graphics</div>
+                    <p class="lang-section-desc">Dessinez des formes géométriques avec la tortue graphique. La sortie
+                        s'affiche dans l'onglet Turtle de l'IDE.</p>
+                    <table class="func-table">
+                        <tr>
+                            <th>Commande</th>
+                            <th>Description</th>
+                            <th>Exemple</th>
+                        </tr>
+                        <tr>
+                            <td>Turtle.move(n)</td>
+                            <td>Avance de n pixels</td>
+                            <td>Turtle.move(100)</td>
+                        </tr>
+                        <tr>
+                            <td>Turtle.right(n)</td>
+                            <td>Tourne à droite de n degrés</td>
+                            <td>Turtle.right(90)</td>
+                        </tr>
+                        <tr>
+                            <td>Turtle.left(n)</td>
+                            <td>Tourne à gauche de n degrés</td>
+                            <td>Turtle.left(45)</td>
+                        </tr>
+                        <tr>
+                            <td>Turtle.pen(down)</td>
+                            <td>Baisse le crayon (dessine)</td>
+                            <td>Turtle.pen(down)</td>
+                        </tr>
+                        <tr>
+                            <td>Turtle.pen(up)</td>
+                            <td>Lève le crayon (déplace sans dessiner)</td>
+                            <td>Turtle.pen(up)</td>
+                        </tr>
+                        <tr>
+                            <td>Turtle.clear()</td>
+                            <td>Efface le canvas</td>
+                            <td>Turtle.clear()</td>
+                        </tr>
+                    </table>
+                    <div class="code-block">
+                        <span class="cm">// Un carré</span>
+                        <span class="kw">repeat</span> time(<span class="nm">4</span>) {
+                        &nbsp;&nbsp;<span class="bt">Turtle</span>.<span class="fn">move</span>(<span
+                            class="nm">100</span>)
+                        &nbsp;&nbsp;<span class="bt">Turtle</span>.<span class="fn">right</span>(<span
+                            class="nm">90</span>)
+                        }
+
+                        <span class="cm">// Un triangle équilatéral</span>
+                        <span class="kw">repeat</span> time(<span class="nm">3</span>) {
+                        &nbsp;&nbsp;<span class="bt">Turtle</span>.<span class="fn">move</span>(<span
+                            class="nm">120</span>)
+                        &nbsp;&nbsp;<span class="bt">Turtle</span>.<span class="fn">right</span>(<span
+                            class="nm">120</span>)
+                        }
+
+                        <span class="cm">// Spirale</span>
+                        <span class="tp">int</span> d = <span class="nm">5</span>
+                        <span class="kw">repeat</span> time(<span class="nm">40</span>) {
+                        &nbsp;&nbsp;<span class="bt">Turtle</span>.<span class="fn">move</span>(d)
+                        &nbsp;&nbsp;<span class="bt">Turtle</span>.<span class="fn">right</span>(<span
+                            class="nm">45</span>)
+                        &nbsp;&nbsp;d += <span class="nm">3</span>
+                        }
+
+                        <span class="cm">// Déplacement sans dessiner</span>
+                        <span class="bt">Turtle</span>.<span class="fn">pen</span>(up)
+                        <span class="bt">Turtle</span>.<span class="fn">move</span>(<span class="nm">50</span>)
+                        <span class="bt">Turtle</span>.<span class="fn">pen</span>(down)
+                        <div class="code-block-label">turtle.rint</div>
+                    </div>
+                </div>
+
+                <!-- ── SYSTEM ── -->
+                <div id="system" class="lang-section">
+                    <div class="lang-section-title">12 · System & Virtualisation</div>
+                    <p class="lang-section-desc">Créez et gérez des environnements virtuels isolés directement depuis
+                        RINT.</p>
+                    <div class="code-block">
+                        <span class="kw">use</span> <span class="bt">System</span>(*)
+
+                        <span class="cm">// Créer une machine virtuelle isolée</span>
+                        <span class="tp">sys</span> PC_Eleve = <span class="bt">System</span>.<span
+                            class="fn">virtual.new</span>(
+                        &nbsp;&nbsp;ram=<span class="st">"mb:16"</span>,
+                        &nbsp;&nbsp;cpu=<span class="st">"core:1"</span>
+                        )
+
+                        <span class="cm">// Configurer la VM</span>
+                        PC_Eleve.<span class="fn">virtual.config</span>(
+                        &nbsp;&nbsp;priority=<span class="st">"low"</span>,
+                        &nbsp;&nbsp;auto_reboot=<span class="nm">true</span>
+                        )
+
+                        <span class="cm">// Exécuter du code dans la VM</span>
+                        PC_Eleve.<span class="fn">run</span>() {
+                        &nbsp;&nbsp;<span class="bt">console</span>.<span class="fn">log</span>(<span
+                            class="st">"Exécution en environnement isolé"</span>)
+                        }
+                        <div class="code-block-label">system.rint</div>
+                    </div>
+                    <div class="note-box"><strong>stack vs heap :</strong> La <strong>stack</strong> est locale, rapide,
+                        libérée automatiquement. Le <strong>heap</strong> est global, dynamique, et nécessite gestion
+                        manuelle ou via realloc. Choisissez selon la portée de votre variable.</div>
+                </div>
+
+            </div>
+        </section>
+    </div><!-- /page-lang -->
+
+
+    <!-- ================================================================
+     PAGE 3 — FEATURES
+================================================================ -->
+    <div id="page-features" class="page">
+        <section class="features-page">
+            <div class="container">
+                <div class="features-hero">
+                    <div class="tag" style="display:block;text-align:center;margin-bottom:14px">// RINT STUDIO V6.4
+                    </div>
+                    <h1>35+ features.<br><span style="color:var(--accent)">Toutes fonctionnelles.</span></h1>
+                    <p>Pas de boutons bidon. Pas de placeholders. Chaque feature ci-dessous existe réellement dans
+                        l'IDE.</p>
+                </div>
+
+                <div class="feat-stats">
+                    <div class="fstat">
+                        <div class="n">35+</div>
+                        <div class="l">Features réelles</div>
+                    </div>
+                    <div class="fstat">
+                        <div class="n">5</div>
+                        <div class="l">Thèmes</div>
+                    </div>
+                    <div class="fstat">
+                        <div class="n">35</div>
+                        <div class="l">Raccourcis clavier</div>
+                    </div>
+                    <div class="fstat">
+                        <div class="n">200+</div>
+                        <div class="l">Completions</div>
+                    </div>
+                </div>
+
+                <div class="themes-row">
+                    <h3>Thèmes intégrés</h3>
+                    <p>5 thèmes soignés, commutables en live sans redémarrer l'IDE.</p>
+                    <div class="theme-chips">
+                        <span class="tc tc-noir">⬤ Noir</span>
+                        <span class="tc tc-void">⬤ Void</span>
+                        <span class="tc tc-mid">⬤ Midnight</span>
+                        <span class="tc tc-for">⬤ Forest</span>
+                        <span class="tc tc-ember">⬤ Ember</span>
+                    </div>
+                </div>
+
+                <div class="feat-categories">
+
+                    <div>
+                        <div class="feat-cat-title">Édition &amp; Intelligence</div>
+                        <div class="feat-grid">
+                            <div class="fp hi">
+                                <div class="fp-ico">🔍</div>
+                                <div>
+                                    <div class="fp-title">Syntax Highlighting + Linting</div>
+                                    <div class="fp-desc">Coloration sémantique complète. Détection d'erreurs inline avec
+                                        soulignements et panneau lint dédié.</div>
+                                </div>
+                            </div>
+                            <div class="fp hi">
+                                <div class="fp-ico">🤖</div>
+                                <div>
+                                    <div class="fp-title">Intelligent Autocomplete</div>
+                                    <div class="fp-desc">200+ completions. Suggestions contextuelles après point (.) ou
+                                        Ctrl+Espace. Documentation inline.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">📁</div>
+                                <div>
+                                    <div class="fp-title">Code Folding</div>
+                                    <div class="fp-desc">Cliquez sur ▶/▼ dans la gouttière pour replier les blocs { }.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">🗺️</div>
+                                <div>
+                                    <div class="fp-title">Minimap améliorée</div>
+                                    <div class="fp-desc">Vue d'ensemble avec scaling dynamique, indicateur de viewport
+                                        coloré, clic pour naviguer.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">⬛</div>
+                                <div>
+                                    <div class="fp-title">Split View</div>
+                                    <div class="fp-desc">Divisez l'espace de travail pour voir deux fichiers côte à
+                                        côte. Ctrl+\</div>
+                                </div>
+                            </div>
+                            <div class="fp hi">
+                                <div class="fp-ico">🔎</div>
+                                <div>
+                                    <div class="fp-title">Find &amp; Replace + Regex</div>
+                                    <div class="fp-desc">Regex complète, case-sensitive, word boundary. Replace One /
+                                        Replace All. Navigation ▲▼.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">🎨</div>
+                                <div>
+                                    <div class="fp-title">Color Picker</div>
+                                    <div class="fp-desc">Sélecteur de couleur visuel via le menu Projet > Color Picker.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">📋</div>
+                                <div>
+                                    <div class="fp-title">Snippet Manager</div>
+                                    <div class="fp-desc">Créez, éditez et insérez des snippets personnalisés.
+                                        Ctrl+Shift+S. 15 snippets prédéfinis.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">💬</div>
+                                <div>
+                                    <div class="fp-title">Comment Toggle</div>
+                                    <div class="fp-desc">Commentez/décommentez une ligne instantanément. Ctrl+/</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="feat-cat-title">Navigation &amp; Commandes</div>
+                        <div class="feat-grid">
+                            <div class="fp hi">
+                                <div class="fp-ico">⌨️</div>
+                                <div>
+                                    <div class="fp-title">Command Palette</div>
+                                    <div class="fp-desc">35 commandes accessibles instantanément avec recherche floue.
+                                        Ctrl+P</div>
+                                </div>
+                            </div>
+                            <div class="fp hi">
+                                <div class="fp-ico">🔦</div>
+                                <div>
+                                    <div class="fp-title">Spotlight Search</div>
+                                    <div class="fp-desc">Recherche globale dans tous les fichiers .rint du workspace.
+                                        Ctrl+Shift+F</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">🏹</div>
+                                <div>
+                                    <div class="fp-title">Go to Definition</div>
+                                    <div class="fp-desc">Navigue vers la déclaration func/class/variable. F12</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">🔗</div>
+                                <div>
+                                    <div class="fp-title">Find References</div>
+                                    <div class="fp-desc">Trouve toutes les occurrences d'un symbole. Shift+F12</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">📝</div>
+                                <div>
+                                    <div class="fp-title">Symbol Navigation / Outline</div>
+                                    <div class="fp-desc">Outline live (functions, classes, variables) avec mise à jour à
+                                        chaque touche.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">🔖</div>
+                                <div>
+                                    <div class="fp-title">Bookmarks</div>
+                                    <div class="fp-desc">Marquez des lignes (clic droit gouttière). Ctrl+F2 toggle, F2
+                                        suivant.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">↗</div>
+                                <div>
+                                    <div class="fp-title">Go to Line</div>
+                                    <div class="fp-desc">Navigue directement à une ligne. Ctrl+G</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="feat-cat-title">Débogage &amp; Performance</div>
+                        <div class="feat-grid">
+                            <div class="fp">
+                                <div class="fp-ico">🔴</div>
+                                <div>
+                                    <div class="fp-title">Breakpoints Visuels</div>
+                                    <div class="fp-desc">Clic gauche gouttière = breakpoint rouge. Panel debug liste
+                                        tous les points d'arrêt.</div>
+                                </div>
+                            </div>
+                            <div class="fp hi">
+                                <div class="fp-ico">🧠</div>
+                                <div>
+                                    <div class="fp-title">Variable Watch &amp; Memory Monitor</div>
+                                    <div class="fp-desc">Toutes les variables trackées live avec type et valeur. Graphe
+                                        mémoire temps réel.</div>
+                                </div>
+                            </div>
+                            <div class="fp hi">
+                                <div class="fp-ico">📊</div>
+                                <div>
+                                    <div class="fp-title">Performance Profiler</div>
+                                    <div class="fp-desc">Graphe de consommation mémoire avec peak, moyenne,
+                                        échantillons.</div>
+                                </div>
+                            </div>
+                            <div class="fp hi">
+                                <div class="fp-ico">📐</div>
+                                <div>
+                                    <div class="fp-title">Code Metrics</div>
+                                    <div class="fp-desc">Lignes, code, commentaires, complexité cyclomatique, functions,
+                                        classes, variables.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">✅</div>
+                                <div>
+                                    <div class="fp-title">TODO / FIXME Tracker</div>
+                                    <div class="fp-desc">Scanne TODO, FIXME, HACK, NOTE, BUG. Double-clic pour naviguer.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">⚡</div>
+                                <div>
+                                    <div class="fp-title">Task Runner</div>
+                                    <div class="fp-desc">6 tâches préconfigurées (Run, Clean, Install, Lint, Git).
+                                        Sortie inline.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="feat-cat-title">Refactoring &amp; Qualité</div>
+                        <div class="feat-grid">
+                            <div class="fp hi">
+                                <div class="fp-ico">✏️</div>
+                                <div>
+                                    <div class="fp-title">Rename Symbol</div>
+                                    <div class="fp-desc">Renomme en toute sécurité toutes les références d'un symbole.
+                                        Menu Édition > Renommer.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">💡</div>
+                                <div>
+                                    <div class="fp-title">Quick Fix Suggestions</div>
+                                    <div class="fp-desc">Corrections automatiques pour les erreurs lint courantes.
+                                        Ctrl+.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">📐</div>
+                                <div>
+                                    <div class="fp-title">Format Code</div>
+                                    <div class="fp-desc">Auto-indentation basée sur les accolades. Shift+Alt+F</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">📝</div>
+                                <div>
+                                    <div class="fp-title">Generate Documentation</div>
+                                    <div class="fp-desc">Génère un commentaire doc structuré pour une fonction.
+                                        Ctrl+Shift+D</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">📦</div>
+                                <div>
+                                    <div class="fp-title">Smart Imports</div>
+                                    <div class="fp-desc">Détecte les dépendances utilisées et suggère les use manquants.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="feat-cat-title">Projet &amp; Intégration</div>
+                        <div class="feat-grid">
+                            <div class="fp hi">
+                                <div class="fp-ico">🌿</div>
+                                <div>
+                                    <div class="fp-title">Git Integration</div>
+                                    <div class="fp-desc">Status, Log, Diff, Push via subprocess. Panel dédié dans la
+                                        sidebar.</div>
+                                </div>
+                            </div>
+                            <div class="fp hi">
+                                <div class="fp-ico">🖥️</div>
+                                <div>
+                                    <div class="fp-title">Terminal Intégré Réel</div>
+                                    <div class="fp-desc">Exécution de vraies commandes shell. cd, clear, historique ↑↓,
+                                        Ctrl+C.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">🕰</div>
+                                <div>
+                                    <div class="fp-title">File History &amp; Recovery</div>
+                                    <div class="fp-desc">Snapshots automatiques à chaque sauvegarde. Restaurez n'importe
+                                        quel état précédent.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">💼</div>
+                                <div>
+                                    <div class="fp-title">Session Management</div>
+                                    <div class="fp-desc">Sauvegardez et rechargez votre session (fichiers ouverts,
+                                        thème, cwd).</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">📁</div>
+                                <div>
+                                    <div class="fp-title">Explorer &amp; File Tree</div>
+                                    <div class="fp-desc">Naviguez dans votre workspace. Double-clic pour ouvrir.
+                                        Actualisation automatique.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">⚙</div>
+                                <div>
+                                    <div class="fp-title">Workspace Settings</div>
+                                    <div class="fp-desc">Configuration par projet : taille de police, thème, tab size,
+                                        linting on/off.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="feat-cat-title">Export &amp; Extensibilité</div>
+                        <div class="feat-grid">
+                            <div class="fp hi">
+                                <div class="fp-ico">📤</div>
+                                <div>
+                                    <div class="fp-title">Export vers HTML</div>
+                                    <div class="fp-desc">Exporte votre code avec coloration syntaxique en HTML, prêt à
+                                        partager.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">📄</div>
+                                <div>
+                                    <div class="fp-title">Markdown Preview</div>
+                                    <div class="fp-desc">Rendu HTML de vos fichiers .md en un clic. S'ouvre dans le
+                                        navigateur.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">🧩</div>
+                                <div>
+                                    <div class="fp-title">Plugin System (UI)</div>
+                                    <div class="fp-desc">Architecture ouverte. Panel Extensions avec status
+                                        installé/disponible.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">🏪</div>
+                                <div>
+                                    <div class="fp-title">Extension Marketplace (UI)</div>
+                                    <div class="fp-desc">Interface prête pour le marketplace RINT.</div>
+                                </div>
+                            </div>
+                            <div class="fp">
+                                <div class="fp-ico">🐢</div>
+                                <div>
+                                    <div class="fp-title">Turtle Graphics Canvas</div>
+                                    <div class="fp-desc">Canvas graphique dédié pour les commandes
+                                        Turtle.move/right/left.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- SHORTCUTS -->
+                <div class="shortcuts-section">
+                    <div class="tag">// RACCOURCIS CLAVIER</div>
+                    <h2 class="section-title">Tout au bout des doigts.</h2>
+                    <div class="shortcuts-grid">
+                        <div class="shortcut"><span class="sk-action">Exécuter le code</span>
+                            <div class="sk-keys"><span class="sk-key">F5</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Arrêter l'exécution</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">.</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Sauvegarder</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">S</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Nouveau fichier</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">N</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Ouvrir fichier</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">O</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Command Palette</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">P</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Trouver/Remplacer</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">F</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Spotlight Search</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">⇧</span><span
+                                    class="sk-key">F</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Go to Definition</span>
+                            <div class="sk-keys"><span class="sk-key">F12</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Find References</span>
+                            <div class="sk-keys"><span class="sk-key">⇧</span><span class="sk-key">F12</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Aller à la ligne</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">G</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Toggle Bookmark</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">F2</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Prochain Bookmark</span>
+                            <div class="sk-keys"><span class="sk-key">F2</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Toggle Sidebar</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">B</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Toggle Minimap</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">M</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Split View</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">\</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Snippets</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">⇧</span><span
+                                    class="sk-key">S</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Format Code</span>
+                            <div class="sk-keys"><span class="sk-key">⇧</span><span class="sk-key">Alt</span><span
+                                    class="sk-key">F</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Terminal</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">`</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Autocomplete</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">Espace</span>
+                            </div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Fermer tab</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">W</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">File History</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">⇧</span><span
+                                    class="sk-key">H</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Generate Doc</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">⇧</span><span
+                                    class="sk-key">D</span></div>
+                        </div>
+                        <div class="shortcut"><span class="sk-action">Toggle Comment</span>
+                            <div class="sk-keys"><span class="sk-key">Ctrl</span><span class="sk-key">/</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div><!-- /page-features -->
+
+
+    <!-- ================================================================
+     PAGE 4 — DOWNLOAD
+================================================================ -->
+    <div id="page-download" class="page">
+        <section class="dl-page">
+            <div class="container">
+                <div class="dl-hero">
+                    <div class="tag" style="display:block;text-align:center;margin-bottom:14px">// TÉLÉCHARGEMENT</div>
+                    <h1>RINT Studio<br><span>v6.4</span></h1>
+                    <p>L'IDE RINT professionnel. Gratuit. Aucune dépendance requise (Python inclus dans le .exe).</p>
+                </div>
+
+                <!-- MAIN DOWNLOAD -->
+                <div class="dl-main">
+                    <div class="dl-ver-badge">VERSION ACTUELLE · V6.4 · 2025</div>
+                    <h2>RINT Studio v6.4.exe</h2>
+                    <p>Windows 10/11 · x64 · Toutes les features débloquées · Gratuit</p>
+                    <a href="RINT_Studio_v6.4.exe" download class="btn btn-dl">⬇ &nbsp;Télécharger
+                        RINT_Studio_v6.4.exe</a>
+                    <div class="dl-meta">
+                        <div class="dl-meta-item"><span class="ico">🪟</span> Windows 10 / 11</div>
+                        <div class="dl-meta-item"><span class="ico">💻</span> x64 uniquement</div>
+                        <div class="dl-meta-item"><span class="ico">⚡</span> Python inclus</div>
+                        <div class="dl-meta-item"><span class="ico">🎁</span> 100% Gratuit</div>
+                        <div class="dl-meta-item"><span class="ico">📦</span> ~15 MB</div>
+                    </div>
+                </div>
+
+                <!-- REQUIREMENTS -->
+                <div class="dl-requirements">
+                    <h3>Configuration requise</h3>
+                    <div class="req-grid">
+                        <div class="req-item">
+                            <div class="ri-label">OS</div>
+                            <div class="ri-value">Windows 10 / 11</div>
+                        </div>
+                        <div class="req-item">
+                            <div class="ri-label">Architecture</div>
+                            <div class="ri-value">x64 (64 bits)</div>
+                        </div>
+                        <div class="req-item">
+                            <div class="ri-label">RAM</div>
+                            <div class="ri-value">4 GB minimum</div>
+                        </div>
+                        <div class="req-item">
+                            <div class="ri-label">Stockage</div>
+                            <div class="ri-value">100 MB libre</div>
+                        </div>
+                        <div class="req-item">
+                            <div class="ri-label">Python</div>
+                            <div class="ri-value">Inclus dans .exe</div>
+                        </div>
+                        <div class="req-item">
+                            <div class="ri-label">Droits</div>
+                            <div class="ri-value">Utilisateur standard</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INSTALLATION STEPS -->
+                <div class="dl-install">
+                    <h3>Installation en 3 étapes</h3>
+                    <div class="install-steps">
+                        <div class="install-step">
+                            <div class="step-num">1</div>
+                            <div class="step-content">
+                                <h4>Télécharger le fichier</h4>
+                                <p>Cliquez sur le bouton de téléchargement ci-dessus. Le fichier
+                                    <code>RINT_Studio_v6.4.exe</code> (~15 MB) sera téléchargé.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="install-step">
+                            <div class="step-num">2</div>
+                            <div class="step-content">
+                                <h4>Lancer l'exécutable</h4>
+                                <p>Double-cliquez sur le .exe. Si Windows SmartScreen s'affiche, cliquez
+                                    <strong>Informations complémentaires → Exécuter quand même</strong>. L'application
+                                    n'est pas signée (projet open).
+                                </p>
+                            </div>
+                        </div>
+                        <div class="install-step">
+                            <div class="step-num">3</div>
+                            <div class="step-content">
+                                <h4>Coder en RINT !</h4>
+                                <p>L'IDE s'ouvre avec un fichier de démo. Appuyez sur <code>F5</code> pour exécuter.
+                                    Consultez la page <strong>Langage</strong> pour apprendre la syntaxe.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VERSION HISTORY -->
+                <div class="dl-versions">
+                    <h3>Historique des versions</h3>
+                    <div class="versions-list">
+
+                        <div class="version-row latest">
+                            <div class="vr-info">
+                                <div class="vr-num">v6.4</div>
+                                <span class="vr-tag vr-tag-new">DERNIÈRE</span>
+                                <div class="vr-date">2025</div>
+                            </div>
+                            <div class="vr-notes">Fix console invisible · Thèmes live · Outline live · Code Folding ·
+                                Split View · Snippet Manager · Quick Fix · Gen Doc · Smart Imports · Task Runner ·
+                                Session Management · File History</div>
+                            <a href="RINT_Studio_v6.4.exe" download class="vr-dl vr-dl-main">⬇ Télécharger</a>
+                        </div>
+
+                        <div class="version-row">
+                            <div class="vr-info">
+                                <div class="vr-num">v6.0</div>
+                                <span class="vr-tag vr-tag-stable">STABLE</span>
+                                <div class="vr-date">2026 </div>
+                            </div>
+                            <div class="vr-notes">Première version majeure. Terminal réel, Find &amp; Replace regex,
+                                Git, Memory Monitor, Minimap, Autocomplete 200+, Export HTML, Rename Symbol, 5 thèmes.
+                            </div>
+                            <a href="archives/RINT_Studio_v6.0.exe" download class="vr-dl vr-dl-ghost">⬇ Archive</a>
+                        </div>
+
+                        <div class="version-row">
+                            <div class="vr-info">
+                                <div class="vr-num">v4.0</div>
+                                <span class="vr-tag vr-tag-stable">LEGACY</span>
+                                <div class="vr-date">2024</div>
+                            </div>
+                            <div class="vr-notes">Évolution majeure. Amélioration des performances, terminal intégré,
+                                system d'extensions, Turtle graphics, gestion mémoire avancée.</div>
+                            <a href="archives/RINT_Studio_v4.0.exe" download class="vr-dl vr-dl-ghost">⬇ Archive</a>
+                        </div>
+
+                        <div class="version-row">
+                            <div class="vr-info">
+                                <div class="vr-num">v3.6</div>
+                                <span class="vr-tag vr-tag-stable">LEGACY</span>
+                                <div class="vr-date">2024</div>
+                            </div>
+                            <div class="vr-notes">Version originale. Syntax highlighting basique, interpréteur RINT
+                                simple, thèmes, onglets, palette de commandes, autocomplétion.</div>
+                            <a href="archives/RINT_Studio_v3.6.exe" download class="vr-dl vr-dl-ghost">⬇ Archive</a>
+                        </div>
+
+                        <div class="version-row">
+                            <div class="vr-info">
+                                <div class="vr-num">v2.2</div>
+                                <span class="vr-tag vr-tag-stable">DEPRECATED</span>
+                                <div class="vr-date">2023</div>
+                            </div>
+                            <div class="vr-notes">Version bêta. Prototype du langage RINT, IDE basique, interpréteur
+                                simple, support des variables et boucles.</div>
+                            <a href="archives/RINT_Studio_v2.2.exe" download class="vr-dl vr-dl-ghost">⬇ Archive</a>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- NOTE -->
+                <div class="note-box" style="margin-bottom:48px">
+                    <strong>Pour les développeurs :</strong> RINT Studio est développé en Python avec customtkinter.
+                    Si vous avez Python installé, vous pouvez également lancer directement le fichier source :
+                    <code
+                        style="font-family:'JetBrains Mono',monospace;font-size:12px">pip install customtkinter psutil</code>
+                    puis
+                    <code
+                        style="font-family:'JetBrains Mono',monospace;font-size:12px">python RINT_Studio_v6.4.py</code>
+                </div>
+
+            </div>
+        </section>
+
+        <footer>
+            <div class="container">
+                <div class="tag" style="justify-content:center;display:flex;margin-bottom:16px">// ATLAS STUDIO</div>
+                <h2>Fait avec ❤ par<br><span>L'équipe Atlas</span></h2>
+                <p>RINT — Le langage du futur. Gratuit. Open. Puissant.</p>
+                <div class="footer-meta">
+                    <span>© 2025 Léandro BOFFY</span>
+                    <span>RINT Language v1.0</span>
+                    <span>Atlas Studio</span>
+                    <span></span>
+                </div>
+            </div>
+        </footer>
+    </div><!-- /page-download -->
+
+
+    <script>
+        function showPage(id, btn) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+            const el = document.getElementById('page-' + id);
+            if (el) el.classList.add('active');
+            if (btn) btn.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // Active nav state on load
+        document.querySelector('.nav-links button').classList.add('active');
+
+        // Intersection Observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeUp .6s cubic-bezier(.2,.8,.2,1) both';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feat-item, .code-card, .info-block, .fp, .version-row').forEach(el => {
+            el.style.opacity = '0';
+            observer.observe(el);
+        });
+
+        // Also handle fp animation delays for grids
+        document.querySelectorAll('.feat-grid').forEach(grid => {
+            Array.from(grid.children).forEach((el, i) => {
+                el.style.animationDelay = `${i * 0.05}s`;
+            });
+        });
+    </script>
+</body>
+
+</html>
