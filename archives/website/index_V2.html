@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RINT — Le Langage du Futur</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000000;
+            --glass: rgba(22, 22, 26, 0.72);
+            --glass-light: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.07);
+            --text: #f0f0f2;
+            --muted: #6e6e73;
+            --accent: #b8f2e6;
+            --accent2: #c8b8ff;
+            --code-fg: #b8f2e6;
+            --radius: 20px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── BG ORBS ── */
+        .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.12; }
+        .orb-1 { width: 600px; height: 600px; background: #b8f2e6; top: -200px; left: -150px; animation: drift1 20s ease-in-out infinite alternate; }
+        .orb-2 { width: 500px; height: 500px; background: #c8b8ff; top: 30%; right: -200px; animation: drift2 25s ease-in-out infinite alternate; }
+        .orb-3 { width: 400px; height: 400px; background: #b8f2e6; bottom: 10%; left: 30%; animation: drift1 18s ease-in-out infinite alternate-reverse; }
+        @keyframes drift1 { from { transform: translate(0,0); } to { transform: translate(60px,40px); } }
+        @keyframes drift2 { from { transform: translate(0,0); } to { transform: translate(-40px,60px); } }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 1; opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            width: min(90%, 900px); height: 58px;
+            background: rgba(18,18,20,0.85);
+            backdrop-filter: blur(40px) saturate(160%);
+            -webkit-backdrop-filter: blur(40px) saturate(160%);
+            border: 1px solid var(--border); border-radius: 100px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 9999;
+            box-shadow: 0 4px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .nav-logo {
+            font-size: 16px; font-weight: 800; letter-spacing: 0.12em;
+            color: var(--text); font-family: 'Space Mono', monospace; cursor: pointer;
+        }
+        .nav-logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 4px; }
+        .nav-links button {
+            background: transparent; border: none;
+            color: var(--muted); font-size: 13px; font-weight: 500;
+            padding: 8px 16px; border-radius: 100px; cursor: pointer;
+            transition: all 0.3s; font-family: 'Syne', sans-serif;
+            letter-spacing: 0.02em;
+        }
+        .nav-links button:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+        .nav-links button.active { color: var(--bg); background: var(--text); font-weight: 700; }
+        .nav-cta { color: var(--bg) !important; background: var(--text) !important; font-weight: 700 !important; }
+        .nav-cta:hover { background: var(--accent) !important; }
+
+        /* ── PAGE SYSTEM ── */
+        .page { display: none; animation: pageIn 0.5s cubic-bezier(0.2,0.8,0.2,1) both; }
+        .page.active { display: block; }
+        @keyframes pageIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ── SHARED ── */
+        section { position: relative; z-index: 2; }
+        .container { width: min(90%, 960px); margin: 0 auto; }
+        .divider {
+            width: min(90%, 960px); margin: 0 auto; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 70%, transparent);
+        }
+        .section-tag {
+            font-family: 'Space Mono', monospace; font-size: 11px;
+            letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: clamp(28px, 4vw, 44px); font-weight: 700;
+            letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 20px;
+        }
+        .section-desc { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 560px; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn-primary {
+            background: var(--text); color: var(--bg); border: none;
+            padding: 16px 32px; border-radius: 100px; font-size: 15px; font-weight: 700;
+            cursor: pointer; font-family: 'Syne', sans-serif; letter-spacing: 0.02em;
+            transition: all 0.3s; text-decoration: none; display: inline-block;
+        }
+        .btn-primary:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(184,242,230,0.25); }
+        .btn-ghost {
+            background: transparent; color: var(--text); border: 1px solid var(--border);
+            padding: 16px 32px; border-radius: 100px; font-size: 15px; font-weight: 500;
+            cursor: pointer; font-family: 'Syne', sans-serif; transition: all 0.3s;
+            text-decoration: none; display: inline-block;
+        }
+        .btn-ghost:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.04); }
+
+        /* Code tokens */
+        .kw { color: #c8b8ff; } .fn { color: #b8f2e6; } .str { color: #f9c74f; }
+        .cm { color: rgba(255,255,255,0.2); font-style: italic; } .num { color: #ff8fab; }
+        .ln { color: rgba(255,255,255,0.15); margin-right: 20px; user-select: none; font-size: 11px; }
+
+        /* IDE Window */
+        .ide-window {
+            background: rgba(10,10,12,0.95); border: 1px solid var(--border); border-radius: 16px;
+            overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+        }
+        .ide-titlebar {
+            background: rgba(30,30,32,0.8); padding: 14px 16px;
+            display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border);
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-r { background: #ff5f56; } .dot-y { background: #ffbd2e; } .dot-g { background: #27c93f; }
+        .ide-filename { margin-left: 8px; font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); }
+        .ide-body { padding: 24px; font-family: 'Space Mono', monospace; font-size: 13px; line-height: 1.8; color: var(--muted); }
+        .ide-statusbar {
+            background: rgba(184,242,230,0.08); border-top: 1px solid rgba(184,242,230,0.1);
+            padding: 8px 16px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent);
+            display: flex; gap: 20px;
+        }
+
+        /* ============================================================
+           PAGE 1 — HOME
+        ============================================================ */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center; padding: 140px 0 80px;
+        }
+        .hero-inner { width: min(90%, 960px); margin: 0 auto; }
+        .hero-tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(184,242,230,0.08); border: 1px solid rgba(184,242,230,0.2);
+            border-radius: 100px; padding: 6px 16px; font-size: 12px; font-weight: 600;
+            letter-spacing: 0.1em; color: var(--accent); text-transform: uppercase;
+            margin-bottom: 40px; font-family: 'Space Mono', monospace;
+            animation: fadeUp 0.8s cubic-bezier(0.2,0.8,0.2,1) both;
+        }
+        .hero-tag::before {
+            content: ''; width: 6px; height: 6px; border-radius: 50%;
+            background: var(--accent); animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .hero h1 {
+            font-size: clamp(48px, 8vw, 90px); font-weight: 800; line-height: 1.0;
+            letter-spacing: -0.03em; margin-bottom: 32px;
+            animation: fadeUp 0.8s 0.1s cubic-bezier(0.2,0.8,0.2,1) both;
+        }
+        .hero h1 .line-accent { color: var(--accent); }
+        .hero h1 .line-dim { color: var(--muted); font-weight: 400; font-style: italic; }
+        .hero-sub {
+            font-size: 18px; line-height: 1.7; color: var(--muted); max-width: 580px;
+            margin-bottom: 52px; font-weight: 400;
+            animation: fadeUp 0.8s 0.2s cubic-bezier(0.2,0.8,0.2,1) both;
+        }
+        .hero-sub strong { color: var(--text); font-weight: 600; }
+        .hero-actions {
+            display: flex; gap: 16px; flex-wrap: wrap;
+            animation: fadeUp 0.8s 0.3s cubic-bezier(0.2,0.8,0.2,1) both;
+        }
+
+        .ide-section { padding: 120px 0; }
+        .ide-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-top: 64px; }
+        .features-list { display: flex; flex-direction: column; gap: 20px; }
+        .feat-item {
+            background: var(--glass); border: 1px solid var(--border); border-radius: 16px;
+            padding: 24px; backdrop-filter: blur(20px); transition: all 0.4s; position: relative; overflow: hidden;
+        }
+        .feat-item::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(184,242,230,0.3), transparent);
+            opacity: 0; transition: opacity 0.4s;
+        }
+        .feat-item:hover { border-color: rgba(184,242,230,0.2); transform: translateX(4px); }
+        .feat-item:hover::before { opacity: 1; }
+        .feat-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: rgba(184,242,230,0.1); border: 1px solid rgba(184,242,230,0.15);
+            display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 14px;
+        }
+        .feat-item h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+        .feat-item p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+        .showcase-section { padding: 80px 0 120px; }
+        .showcase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 64px; }
+        .code-card {
+            background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius);
+            overflow: hidden; backdrop-filter: blur(20px); transition: all 0.4s;
+        }
+        .code-card:hover { border-color: rgba(184,242,230,0.15); transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+        .code-card-header {
+            padding: 16px 20px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .code-card-title { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 10px; }
+        .badge {
+            font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+            padding: 3px 10px; border-radius: 100px; background: rgba(184,242,230,0.1);
+            color: var(--accent); border: 1px solid rgba(184,242,230,0.15);
+        }
+        .code-block { padding: 20px; font-family: 'Space Mono', monospace; font-size: 12.5px; line-height: 1.8; color: var(--muted); overflow-x: auto; }
+
+        .hardware-section { padding: 80px 0 120px; }
+        .hw-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-top: 64px; }
+        .info-card {
+            background: var(--glass); border: 1px solid var(--border); border-radius: 14px;
+            padding: 20px 24px; display: flex; gap: 16px; align-items: flex-start; margin-bottom: 16px;
+        }
+        .info-icon { font-size: 20px; margin-top: 2px; flex-shrink: 0; }
+        .info-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+        .info-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+        /* ============================================================
+           PAGE 2 — FEATURES
+        ============================================================ */
+        .features-page { padding: 140px 0 80px; }
+        .features-hero { text-align: center; margin-bottom: 80px; }
+        .features-hero .hero-tag { display: inline-flex; }
+        .features-hero h1 {
+            font-size: clamp(40px, 6vw, 72px); font-weight: 800; letter-spacing: -0.03em;
+            line-height: 1.05; margin-bottom: 24px;
+        }
+        .features-hero p { font-size: 18px; color: var(--muted); max-width: 520px; margin: 0 auto; line-height: 1.7; }
+
+        .feat-count-bar {
+            display: flex; justify-content: center; gap: 48px; margin-bottom: 80px;
+            flex-wrap: wrap;
+        }
+        .feat-count { text-align: center; }
+        .feat-count .number {
+            font-size: 48px; font-weight: 800; letter-spacing: -0.04em;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-family: 'Space Mono', monospace;
+        }
+        .feat-count .label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+        .features-categories { display: flex; flex-direction: column; gap: 64px; padding-bottom: 80px; }
+
+        .feat-category-title {
+            font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--accent); font-family: 'Space Mono', monospace;
+            display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+        }
+        .feat-category-title::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg, var(--border), transparent);
+        }
+
+        .feat-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;
+        }
+
+        .feat-pill {
+            background: var(--glass); border: 1px solid var(--border); border-radius: 14px;
+            padding: 18px 20px; display: flex; align-items: flex-start; gap: 14px;
+            backdrop-filter: blur(20px); transition: all 0.35s; cursor: default; position: relative;
+            overflow: hidden;
+        }
+        .feat-pill::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(184,242,230,0.06), transparent 60%);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .feat-pill:hover { border-color: rgba(184,242,230,0.2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+        .feat-pill:hover::after { opacity: 1; }
+
+        .feat-pill-icon {
+            width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 15px;
+            background: rgba(184,242,230,0.08); border: 1px solid rgba(184,242,230,0.12);
+        }
+        .feat-pill-info h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .feat-pill-info p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+        /* Highlight special features */
+        .feat-pill.highlight {
+            border-color: rgba(200,184,255,0.2);
+            background: rgba(200,184,255,0.04);
+        }
+        .feat-pill.highlight .feat-pill-icon {
+            background: rgba(200,184,255,0.1); border-color: rgba(200,184,255,0.2);
+        }
+
+        /* ── THEMES STRIP ── */
+        .themes-strip { margin: 64px 0; }
+        .themes-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+        .theme-chip {
+            padding: 10px 20px; border-radius: 100px; font-size: 13px; font-weight: 600;
+            border: 1px solid transparent; cursor: pointer; transition: all 0.3s; font-family: 'Space Mono', monospace;
+        }
+        .theme-chip:hover { transform: scale(1.05); }
+        .theme-violet { background: rgba(138,43,226,0.15); border-color: rgba(138,43,226,0.4); color: #d4b4ff; }
+        .theme-onyx { background: rgba(60,60,67,0.4); border-color: rgba(255,255,255,0.12); color: #c7c7cc; }
+        .theme-midnight { background: rgba(0,20,60,0.5); border-color: rgba(64,120,255,0.3); color: #82b4ff; }
+        .theme-forest { background: rgba(0,60,20,0.4); border-color: rgba(50,200,100,0.3); color: #7affa8; }
+        .theme-ember { background: rgba(80,20,0,0.5); border-color: rgba(255,100,50,0.3); color: #ffaa78; }
+        .theme-ocean { background: rgba(0,30,60,0.5); border-color: rgba(0,200,255,0.3); color: #6edaff; }
+
+        /* ============================================================
+           PAGE 3 — DOWNLOAD
+        ============================================================ */
+        .download-page { padding: 140px 0 80px; }
+        .download-hero { text-align: center; margin-bottom: 80px; }
+        .version-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(184,242,230,0.08); border: 1px solid rgba(184,242,230,0.25);
+            border-radius: 100px; padding: 6px 18px; margin-bottom: 32px;
+            font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent);
+        }
+        .version-badge .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+        .download-hero h1 {
+            font-size: clamp(40px, 6vw, 72px); font-weight: 800; letter-spacing: -0.03em;
+            line-height: 1.05; margin-bottom: 24px;
+        }
+        .download-hero h1 span { color: var(--accent); }
+        .download-hero p { font-size: 16px; color: var(--muted); max-width: 480px; margin: 0 auto 48px; line-height: 1.7; }
+
+        .download-main-btn {
+            display: inline-flex; align-items: center; gap: 14px;
+            background: var(--text); color: var(--bg); border: none;
+            padding: 20px 48px; border-radius: 100px; font-size: 17px; font-weight: 800;
+            cursor: pointer; font-family: 'Syne', sans-serif; transition: all 0.3s;
+            text-decoration: none; margin-bottom: 16px; letter-spacing: 0.01em;
+        }
+        .download-main-btn:hover { background: var(--accent); transform: translateY(-3px); box-shadow: 0 16px 50px rgba(184,242,230,0.3); }
+        .download-meta { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); }
+
+        .download-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 64px; }
+
+        .download-card {
+            background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 32px; backdrop-filter: blur(20px); position: relative; overflow: hidden;
+            transition: all 0.4s;
+        }
+        .download-card:hover { border-color: rgba(184,242,230,0.15); }
+        .download-card.featured {
+            border-color: rgba(184,242,230,0.2);
+            background: rgba(184,242,230,0.04);
+            grid-column: 1 / -1;
+        }
+        .download-card-badge {
+            position: absolute; top: 20px; right: 20px;
+            background: var(--accent); color: var(--bg);
+            font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+            padding: 4px 12px; border-radius: 100px; font-family: 'Space Mono', monospace;
+        }
+        .download-card-icon { font-size: 32px; margin-bottom: 16px; }
+        .download-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .download-card p { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+        .download-card .version-tag {
+            font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent);
+            background: rgba(184,242,230,0.08); border: 1px solid rgba(184,242,230,0.15);
+            padding: 4px 12px; border-radius: 100px; display: inline-block; margin-bottom: 20px;
+        }
+
+        .dl-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 600;
+            cursor: pointer; font-family: 'Syne', sans-serif; transition: all 0.3s;
+            text-decoration: none; border: none;
+        }
+        .dl-btn-primary { background: var(--text); color: var(--bg); }
+        .dl-btn-primary:hover { background: var(--accent); }
+        .dl-btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .dl-btn-ghost:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.04); }
+
+        .specs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 64px; }
+        .spec-item {
+            background: var(--glass); border: 1px solid var(--border); border-radius: 14px;
+            padding: 20px 24px; text-align: center; backdrop-filter: blur(20px);
+        }
+        .spec-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; }
+        .spec-value { font-size: 16px; font-weight: 700; color: var(--text); }
+
+        .changelog {
+            margin-top: 64px; background: var(--glass); border: 1px solid var(--border);
+            border-radius: var(--radius); overflow: hidden; backdrop-filter: blur(20px);
+        }
+        .changelog-header {
+            padding: 20px 28px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .changelog-header h3 { font-size: 15px; font-weight: 600; }
+        .changelog-body { padding: 28px; }
+        .changelog-item { display: flex; gap: 16px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .changelog-item:last-child { border-bottom: none; }
+        .cl-tag {
+            flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700;
+            padding: 3px 10px; border-radius: 100px; height: fit-content; margin-top: 2px;
+            letter-spacing: 0.06em;
+        }
+        .cl-new { background: rgba(184,242,230,0.12); color: var(--accent); border: 1px solid rgba(184,242,230,0.2); }
+        .cl-fix { background: rgba(249,199,79,0.12); color: #f9c74f; border: 1px solid rgba(249,199,79,0.2); }
+        .cl-imp { background: rgba(200,184,255,0.12); color: var(--accent2); border: 1px solid rgba(200,184,255,0.2); }
+        .changelog-item p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+        .changelog-item p strong { color: var(--text); }
+
+        /* ── FOOTER ── */
+        footer {
+            position: relative; z-index: 2; border-top: 1px solid var(--border);
+            padding: 80px 0; text-align: center;
+        }
+        .footer-title { font-size: clamp(32px, 5vw, 56px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 16px; }
+        .footer-title span { color: var(--accent); }
+        .footer-sub { font-size: 16px; color: var(--muted); margin-bottom: 40px; }
+        .footer-meta { margin-top: 60px; display: flex; justify-content: center; gap: 40px; font-size: 13px; color: rgba(110,110,115,0.5); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .ide-layout, .showcase-grid, .hw-layout, .download-layout, .specs-grid { grid-template-columns: 1fr; }
+            .nav-links button:not(.nav-cta) { display: none; }
+            .hero h1 { font-size: 44px; }
+            .download-card.featured { grid-column: 1; }
+            .feat-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+    <div class="nav-logo" onclick="showPage('home')">R<span>INT</span></div>
+    <div class="nav-links">
+        <button id="nav-home" onclick="showPage('home')" class="active">Accueil</button>
+        <button id="nav-features" onclick="showPage('features')">Features</button>
+        <button id="nav-download" onclick="showPage('download')" class="nav-cta">Télécharger V6</button>
+    </div>
+</nav>
+
+<!-- ================================================================
+     PAGE 1 — HOME
+================================================================ -->
+<div id="page-home" class="page active">
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-tag">V6 — Now Available</div>
+            <h1>
+                Le Langage.<br>
+                <span class="line-accent">L'IDE.</span><br>
+                <span class="line-dim">L'Écosystème.</span>
+            </h1>
+            <p class="hero-sub">
+                Maîtrisez l'informatique de bas niveau avec la <strong>fluidité du futur</strong>. Gérez votre mémoire, virtualisez vos systèmes et pilotez votre hardware dans un environnement conçu pour la performance.
+            </p>
+            <div class="hero-actions">
+                <button class="btn-primary" onclick="showPage('download')">Télécharger Rint Studio</button>
+                <button class="btn-ghost" onclick="showPage('features')">Voir les features →</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- IDE SECTION -->
+    <section class="ide-section" id="ide">
+        <div class="container">
+            <div class="section-tag">// RINT STUDIO</div>
+            <h2 class="section-title">Une interface qui<br>redéfinit l'élégance.</h2>
+            <p class="section-desc">Inspiré par les meilleurs outils de JetBrains, RINT Studio offre une fluidité totale. Moins de lignes, plus de puissance.</p>
+
+            <div class="ide-layout">
+                <div class="features-list">
+                    <div class="feat-item">
+                        <div class="feat-icon">⚡</div>
+                        <h3>Analyseur Statique</h3>
+                        <p>Détectez vos erreurs avant même d'exécuter. Le compilateur raisonne pour vous, en temps réel.</p>
+                    </div>
+                    <div class="feat-item">
+                        <div class="feat-icon">🔬</div>
+                        <h3>Memory Live Watch</h3>
+                        <p>Observez chaque octet alloué en temps réel. Pile, tas, pointeurs — tout est visible, rien ne vous échappe.</p>
+                    </div>
+                    <div class="feat-item">
+                        <div class="feat-icon">🔀</div>
+                        <h3>Multi-Engine</h3>
+                        <p>Passez de la simulation Turtle au pilotage de drones Voltige en un clic. Un environnement, tous les usages.</p>
+                    </div>
+                    <div class="feat-item" style="background: rgba(184,242,230,0.04); border-color: rgba(184,242,230,0.12);">
+                        <div class="feat-icon" style="background: rgba(184,242,230,0.15);">✦</div>
+                        <h3 style="color: var(--accent);">V6 — La révolution</h3>
+                        <p>42 features. Debugger, Live Share, Plugin System, Performance Profiler. La mise à jour qui change tout.</p>
+                    </div>
+                </div>
+
+                <div class="ide-window">
+                    <div class="ide-titlebar">
+                        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+                        <span class="ide-filename">main.rint</span>
+                    </div>
+                    <div class="ide-body">
+                        <div><span class="ln">1</span><span class="cm">// RINT Studio V6</span></div>
+                        <div><span class="ln">2</span><span class="kw">use</span> <span class="fn">System</span>(*)</div>
+                        <div><span class="ln">3</span><span class="kw">use</span> <span class="fn">Audio</span>(*)</div>
+                        <div><span class="ln">4</span>&nbsp;</div>
+                        <div><span class="ln">5</span><span class="kw">bool</span> active = <span class="num">true</span></div>
+                        <div><span class="ln">6</span><span class="kw">wave</span> band1 = Audio.<span class="fn">load</span>(path=<span class="str">""</span>)</div>
+                        <div><span class="ln">7</span><span class="kw">unit</span> vitesse = <span class="str">"km:100"</span></div>
+                        <div><span class="ln">8</span>&nbsp;</div>
+                        <div><span class="ln">9</span><span class="kw">list</span> notes = [<span class="str">"F#"</span>, <span class="str">"C#"</span>, <span class="str">"A.3"</span>]</div>
+                        <div><span class="ln">10</span><span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Rint V6 est prêt."</span>)</div>
+                    </div>
+                    <div class="ide-statusbar">
+                        <span>✓ 0 erreur</span><span>⚡ 2 ms</span><span>● Memory: 0.2 KB</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SHOWCASE SECTION -->
+    <section class="showcase-section">
+        <div class="container">
+            <div class="section-tag">// PUISSANCE TECHNIQUE</div>
+            <h2 class="section-title">Rint parle le langage<br>des machines.</h2>
+            <p class="section-desc">Virtualisation, mémoire manuelle, hardware natif — le contrôle total à chaque ligne.</p>
+
+            <div class="showcase-grid">
+                <div class="code-card">
+                    <div class="code-card-header">
+                        <div class="code-card-title">🖥 Virtualisation & Sécurité</div>
+                        <span class="badge">SYS</span>
+                    </div>
+                    <div class="code-block">
+<span class="cm">// Environnements isolés</span>
+<span class="kw">sys</span> PC_Eleve = System.<span class="fn">virtual.new</span>(
+    ram=<span class="str">"mb:16"</span>, cpu=<span class="str">"core:1"</span>
+)
+PC_Eleve.<span class="fn">virtual.config</span>(
+    priority=<span class="str">"low"</span>, auto_reboot=<span class="num">true</span>
+)
+PC_Eleve.<span class="fn">run</span>() {
+    <span class="fn">console.log</span>(<span class="str">"Système isolé..."</span>)
+}
+                    </div>
+                </div>
+                <div class="code-card">
+                    <div class="code-card-header">
+                        <div class="code-card-title">🧠 Gestion Mémoire Manuelle</div>
+                        <span class="badge">MEM</span>
+                    </div>
+                    <div class="code-block">
+<span class="cm">#memory=manual</span>
+<span class="fn">alloc</span>(
+    type=<span class="str">"stack"</span>, name=<span class="str">"buffer"</span>,
+    size=<span class="str">"bit:32"</span>
+) <span class="kw">string</span> data = <span class="str">"RINT"</span>
+
+<span class="fn">memcpy</span>(data <span class="kw">to</span> backup)
+<span class="fn">realloc</span>(name=<span class="str">"buffer"</span>, size=<span class="str">"bit:64"</span>)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- HARDWARE SECTION -->
+    <section class="hardware-section">
+        <div class="container">
+            <div class="section-tag">// HARDWARE & ROBOTIQUE</div>
+            <h2 class="section-title">Du code au monde réel.</h2>
+            <div class="hw-layout">
+                <div>
+                    <p class="section-desc" style="margin-bottom: 24px;">Que vous soyez sur Arduino ou sur un drone Voltige, Rint parle le langage des machines. Nos bibliothèques natives interagissent avec vos périphériques sans friction.</p>
+                    <div class="info-card"><div class="info-icon">🤖</div><div><h4>Arduino & Microcontrôleurs</h4><p>GPIO, I²C, UART. Zéro overhead, contrôle direct.</p></div></div>
+                    <div class="info-card"><div class="info-icon">🚁</div><div><h4>Drone Voltige</h4><p>Protocoles de vol, capteurs, télémétrie VTOL natives.</p></div></div>
+                    <div class="info-card"><div class="info-icon">🔌</div><div><h4>Auto-détection</h4><p>Le runtime Rint détecte vos périphériques. Plug & code.</p></div></div>
+                </div>
+                <div class="ide-window">
+                    <div class="ide-titlebar">
+                        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+                        <span class="ide-filename">hardware.rint</span>
+                    </div>
+                    <div class="ide-body">
+                        <div><span class="ln">1</span><span class="kw">use</span> <span class="fn">hardware</span>() <span class="kw">as</span> hard()</div>
+                        <div><span class="ln">2</span>&nbsp;</div>
+                        <div><span class="ln">3</span>hardware.<span class="fn">new</span>(</div>
+                        <div><span class="ln">4</span>&nbsp;&nbsp;board=<span class="str">"arduino"</span>,</div>
+                        <div><span class="ln">5</span>&nbsp;&nbsp;model=<span class="str">"uno"</span>, name=<span class="str">"projet"</span></div>
+                        <div><span class="ln">6</span>)</div>
+                        <div><span class="ln">7</span>hardware.<span class="fn">config</span>(</div>
+                        <div><span class="ln">8</span>&nbsp;&nbsp;port=hardware.port.<span class="fn">autodetect</span>()</div>
+                        <div><span class="ln">9</span>)</div>
+                        <div><span class="ln">10</span>&nbsp;</div>
+                        <div><span class="ln">11</span><span class="kw">when</span> hard.<span class="fn">read</span>(pin=<span class="num">9</span>) == <span class="num">true</span> {</div>
+                        <div><span class="ln">12</span>&nbsp;&nbsp;hard.<span class="fn">set</span>(pin=<span class="num">10</span>, digit=<span class="num">true</span>)</div>
+                        <div><span class="ln">13</span>&nbsp;&nbsp;<span class="fn">console.log</span>(<span class="str">"Capteur activé !"</span>)</div>
+                        <div><span class="ln">14</span>}</div>
+                    </div>
+                    <div class="ide-statusbar"><span>✓ Connecté — COM3</span><span>⚡ Arduino UNO</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MINI FOOTER CTA -->
+    <footer>
+        <div class="container">
+            <div class="section-tag" style="justify-content: center; display: flex; margin-bottom: 20px;">// GET STARTED</div>
+            <h2 class="footer-title">Prêt à passer au<br>niveau <span>supérieur</span> ?</h2>
+            <p class="footer-sub">Rint Studio V6 — Windows. Gratuit. Puissant.</p>
+            <button class="download-main-btn" onclick="showPage('download')">⬇ &nbsp;Télécharger .exe — V6</button>
+            <p class="download-meta" style="margin-top:16px;">Windows 10/11 · x64</p>
+            <div class="footer-meta">
+                <span>© 2025 Léandro BOFFY</span>
+                <span>RINT Language</span>
+                <span>Projet Voltige</span>
+            </div>
+        </div>
+    </footer>
+
+</div><!-- /page-home -->
+
+
+<!-- ================================================================
+     PAGE 2 — FEATURES
+================================================================ -->
+<div id="page-features" class="page">
+<div style="position:relative;z-index:2;">
+
+    <section class="features-page">
+        <div class="container">
+
+            <!-- Hero -->
+            <div class="features-hero">
+                <div class="hero-tag" style="display:inline-flex;">V6 — Release Notes</div>
+                <h1>42 features.<br>Une seule app.</h1>
+                <p>De l'analyseur statique au Live Share collaboratif — RINT Studio V6 est l'IDE le plus complet pour le bas niveau.</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="feat-count-bar">
+                <div class="feat-count"><div class="number">42</div><div class="label">Features</div></div>
+                <div class="feat-count"><div class="number">6</div><div class="label">Thèmes</div></div>
+                <div class="feat-count"><div class="number">V6</div><div class="label">Version actuelle</div></div>
+                <div class="feat-count"><div class="number">∞</div><div class="label">Plugins</div></div>
+            </div>
+
+            <!-- Themes Strip -->
+            <div class="themes-strip">
+                <div class="section-tag">// THÈMES INTÉGRÉS</div>
+                <p style="font-size:14px;color:var(--muted);margin-bottom:20px;">Choisissez l'ambiance qui vous convient. Chaque thème est soigné jusqu'au dernier pixel.</p>
+                <div class="themes-grid">
+                    <span class="theme-chip theme-violet">Violet</span>
+                    <span class="theme-chip theme-onyx">Onyx</span>
+                    <span class="theme-chip theme-midnight">Midnight</span>
+                    <span class="theme-chip theme-forest">Forest</span>
+                    <span class="theme-chip theme-ember">Ember</span>
+                    <span class="theme-chip theme-ocean">Ocean</span>
+                </div>
+            </div>
+
+            <div class="features-categories">
+
+                <!-- Édition -->
+                <div>
+                    <div class="feat-category-title">✦ Édition & Intelligence</div>
+                    <div class="feat-grid">
+                        <div class="feat-pill highlight">
+                            <div class="feat-pill-icon">🔍</div>
+                            <div class="feat-pill-info"><h4>Syntax Highlighting & Linting</h4><p>Coloration sémantique complète et détection d'erreurs à la volée.</p></div>
+                        </div>
+                        <div class="feat-pill highlight">
+                            <div class="feat-pill-icon">🤖</div>
+                            <div class="feat-pill-info"><h4>Intelligent Autocomplete</h4><p>Suggestions contextuelles avec documentation inline intégrée.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">✂️</div>
+                            <div class="feat-pill-info"><h4>Multi-cursor Editing</h4><p>Éditez plusieurs endroits simultanément pour une vitesse maximale.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">📁</div>
+                            <div class="feat-pill-info"><h4>Code Folding</h4><p>Repliez les blocs pour naviguer dans de grands fichiers avec clarté.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🗺️</div>
+                            <div class="feat-pill-info"><h4>Minimap</h4><p>Vue d'ensemble de votre fichier en temps réel sur le côté droit.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">⬛</div>
+                            <div class="feat-pill-info"><h4>Split View Editor</h4><p>Divisez votre espace de travail pour comparer ou éditer en parallèle.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🔎</div>
+                            <div class="feat-pill-info"><h4>Find & Replace + Regex</h4><p>Recherche avancée avec expressions régulières complètes.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🎨</div>
+                            <div class="feat-pill-info"><h4>Color Picker</h4><p>Sélecteur de couleur visuel directement dans l'éditeur.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">📋</div>
+                            <div class="feat-pill-info"><h4>Snippet Manager</h4><p>Créez, organisez et insérez vos snippets personnalisés.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div>
+                    <div class="feat-category-title">⌘ Navigation & Commandes</div>
+                    <div class="feat-grid">
+                        <div class="feat-pill highlight">
+                            <div class="feat-pill-icon">⌨️</div>
+                            <div class="feat-pill-info"><h4>Command Palette (Ctrl+P)</h4><p>Accès instantané à toutes les commandes depuis le clavier.</p></div>
+                        </div>
+                        <div class="feat-pill highlight">
+                            <div class="feat-pill-icon">🔦</div>
+                            <div class="feat-pill-info"><h4>Spotlight Search (Ctrl+Shift+F)</h4><p>Recherche globale dans tout votre workspace en millisecondes.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🏹</div>
+                            <div class="feat-pill-info"><h4>Go to Definition</h4><p>Naviguez vers la déclaration de n'importe quel symbole.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🔗</div>
+                            <div class="feat-pill-info"><h4>Find References</h4><p>Trouvez toutes les utilisations d'un symbole dans votre projet.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🏷️</div>
+                            <div class="feat-pill-info"><h4>Symbol Navigation</h4><p>Parcourez les fonctions et variables de votre fichier.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🔖</div>
+                            <div class="feat-pill-info"><h4>Bookmarks</h4><p>Marquez et retrouvez instantanément vos points d'intérêt.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🔑</div>
+                            <div class="feat-pill-info"><h4>Keyboard Shortcut Recorder</h4><p>Personnalisez et enregistrez vos propres raccourcis clavier.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">📌</div>
+                            <div class="feat-pill-info"><h4>Path Autocomplete</h4><p>Complétion automatique des chemins de fichiers et d'imports.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Débogage -->
+                <div>
+                    <div class="feat-category-title">🐛 Débogage & Performances</div>
+                    <div class="feat-grid">
+                        <div class="feat-pill highlight">
+                            <div class="feat-pill-icon">🔴</div>
+                            <div class="feat-pill-info"><h4>Debugger with Breakpoints</h4><p>Stoppez l'exécution, inspectez l'état complet de votre programme.</p></div>
+                        </div>
+                        <div class="feat-pill highlight">
+                            <div class="feat-pill-icon">🧠</div>
+                            <div class="feat-pill-info"><h4>Variable Watch & Memory Monitor</h4><p>Observez chaque variable et chaque octet alloué en direct.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">📊</div>
+                            <div class="feat-pill-info"><h4>Performance Profiler</h4><p>Identifiez les goulots d'étranglement de votre code avec précision.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">📐</div>
+                            <div class="feat-pill-info"><h4>Code Metrics</h4><p>Complexité cyclomatique, couverture, couplage — tout d'un coup d'œil.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">✅</div>
+                            <div class="feat-pill-info"><h4>TODO Tracker</h4><p>Tous vos TODO/FIXME centralisés et navigables depuis un panneau dédié.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">⚡</div>
+                            <div class="feat-pill-info"><h4>Task Runner</h4><p>Automatisez vos tâches de build, test et déploiement en un clic.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Refactoring -->
+                <div>
+                    <div class="feat-category-title">🔧 Refactoring & Code Quality</div>
+                    <div class="feat-grid">
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">✏️</div>
+                            <div class="feat-pill-info"><h4>Rename Symbol</h4><p>Renommez en toute sécurité — toutes les références se mettent à jour.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">💡</div>
+                            <div class="feat-pill-info"><h4>Quick Fix Suggestions</h4><p>L'IDE propose des corrections automatiques pour vos erreurs communes.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🔄</div>
+                            <div class="feat-pill-info"><h4>Refactoring Tools</h4><p>Extraction de fonction, inline variable, déplacement de code — sans risque.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">📦</div>
+                            <div class="feat-pill-info"><h4>Smart Imports</h4><p>Détection et import automatique des dépendances manquantes.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">📝</div>
+                            <div class="feat-pill-info"><h4>Documentation Generator</h4><p>Générez de la doc structurée depuis vos signatures de fonctions.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">✨</div>
+                            <div class="feat-pill-info"><h4>Code Generation</h4><p>Boilerplate automatique, templates, et génération assistée.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projet & Collaboration -->
+                <div>
+                    <div class="feat-category-title">🤝 Projet & Collaboration</div>
+                    <div class="feat-grid">
+                        <div class="feat-pill highlight">
+                            <div class="feat-pill-icon">🐙</div>
+                            <div class="feat-pill-info"><h4>Git Integration UI</h4><p>Commits, branches, diffs et merge requests — sans quitter l'IDE.</p></div>
+                        </div>
+                        <div class="feat-pill highlight">
+                            <div class="feat-pill-icon">🌐</div>
+                            <div class="feat-pill-info"><h4>Live Share (UI)</h4><p>Éditez en temps réel avec vos collaborateurs. Pair programming natif.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">📁</div>
+                            <div class="feat-pill-info"><h4>Project Management</h4><p>Organisez vos projets, ressources et dépendances depuis un hub central.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🖥️</div>
+                            <div class="feat-pill-info"><h4>Terminal Integration</h4><p>Terminal intégré avec support complet des commandes système.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">🕰️</div>
+                            <div class="feat-pill-info"><h4>File History & Recovery</h4><p>Chaque modification est tracée. Revenez en arrière à tout moment.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">💼</div>
+                            <div class="feat-pill-info"><h4>Session Management</h4><p>Sauvegardez et restaurez vos sessions de travail complètes.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">👥</div>
+                            <div class="feat-pill-info"><h4>Collaborative Editing (UI)</h4><p>Interface prête pour l'édition multi-utilisateurs synchronisée.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extensibilité -->
+                <div>
+                    <div class="feat-category-title">🧩 Extensibilité & Export</div>
+                    <div class="feat-grid">
+                        <div class="feat-pill highlight">
+                            <div class="feat-pill-icon">🧩</div>
+                            <div class="feat-pill-info"><h4>Plugin System</h4><p>Architecture ouverte — étendez l'IDE avec vos propres modules.</p></div>
+                        </div>
+                        <div class="feat-pill highlight">
+                            <div class="feat-pill-icon">🏪</div>
+                            <div class="feat-pill-info"><h4>Extension Marketplace (UI)</h4><p>Parcourez et installez des extensions de la communauté Rint.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">📤</div>
+                            <div class="feat-pill-info"><h4>Export to HTML / PDF</h4><p>Partagez votre code sous forme de document formaté et lisible.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">📄</div>
+                            <div class="feat-pill-info"><h4>Markdown Preview</h4><p>Prévisualisez vos fichiers .md en rendu HTML en temps réel.</p></div>
+                        </div>
+                        <div class="feat-pill">
+                            <div class="feat-pill-icon">⚙️</div>
+                            <div class="feat-pill-info"><h4>Workspace Settings</h4><p>Configuration par projet : indentation, linting, thème, comportements.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /features-categories -->
+
+            <!-- CTA -->
+            <div style="text-align:center;padding:40px 0 60px;">
+                <button class="btn-primary" onclick="showPage('download')">Obtenir toutes ces features →</button>
+            </div>
+
+        </div>
+    </section>
+
+</div>
+</div><!-- /page-features -->
+
+
+<!-- ================================================================
+     PAGE 3 — DOWNLOAD
+================================================================ -->
+<div id="page-download" class="page">
+<div style="position:relative;z-index:2;">
+
+    <section class="download-page">
+        <div class="container">
+
+            <!-- Hero Download -->
+            <div class="download-hero">
+                <div class="version-badge">
+                    <span class="dot-live"></span>
+                    RINT Studio V6 — Stable Release
+                </div>
+                <h1>Téléchargez.<br>Codez. <span>Dominez.</span></h1>
+                <p>L'IDE pensé pour le bas niveau. Gratuit, puissant, sans compromis.</p>
+                <a href="#" class="download-main-btn">
+                    <span>⬇</span> Télécharger .exe — Windows
+                </a>
+                <p class="download-meta">Windows 10 / 11 · x64 · ~86 MB · Gratuit</p>
+            </div>
+
+            <!-- Download Cards -->
+            <div class="download-layout">
+                <!-- Featured: Windows -->
+                <div class="download-card featured">
+                    <span class="download-card-badge">RECOMMANDÉ</span>
+                    <div class="download-card-icon">🪟</div>
+                    <div class="version-tag">V6.0 — Stable</div>
+                    <h3>RINT Studio pour Windows</h3>
+                    <p>La version complète avec toutes les 42 features. Interface native Windows, performances optimisées, démarrage rapide. Inclut le compilateur Rint, le runtime, et tous les modules hardware.</p>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <a href="#" class="dl-btn dl-btn-primary"><span>⬇</span> Installer (.exe)</a>
+                        <a href="#" class="dl-btn dl-btn-ghost"><span>📦</span> Archive (.zip)</a>
+                    </div>
+                </div>
+
+                <!-- Coming Soon: macOS -->
+                <div class="download-card" style="opacity:0.6;">
+                    <div class="download-card-icon">🍎</div>
+                    <div class="version-tag" style="background:rgba(255,255,255,0.04);color:var(--muted);border-color:var(--border);">Bientôt</div>
+                    <h3>macOS</h3>
+                    <p>Version macOS en développement. Apple Silicon et Intel. Inscrivez-vous pour être notifié à la sortie.</p>
+                    <a href="#" class="dl-btn dl-btn-ghost" style="opacity:0.5;pointer-events:none;">⏳ En cours…</a>
+                </div>
+
+                <!-- Coming Soon: Linux -->
+                <div class="download-card" style="opacity:0.6;">
+                    <div class="download-card-icon">🐧</div>
+                    <div class="version-tag" style="background:rgba(255,255,255,0.04);color:var(--muted);border-color:var(--border);">Bientôt</div>
+                    <h3>Linux</h3>
+                    <p>Package .deb et .AppImage prévus pour les distributions majeures. Debian, Ubuntu, Arch.</p>
+                    <a href="#" class="dl-btn dl-btn-ghost" style="opacity:0.5;pointer-events:none;">⏳ En cours…</a>
+                </div>
+            </div>
+
+            <!-- Specs -->
+            <div class="specs-grid">
+                <div class="spec-item"><div class="spec-label">VERSION</div><div class="spec-value">V6.0 Stable</div></div>
+                <div class="spec-item"><div class="spec-label">TAILLE</div><div class="spec-value">~86 MB</div></div>
+                <div class="spec-item"><div class="spec-label">OS REQUIS</div><div class="spec-value">Win 10 / 11</div></div>
+                <div class="spec-item"><div class="spec-label">ARCHITECTURE</div><div class="spec-value">x64</div></div>
+                <div class="spec-item"><div class="spec-label">RAM MIN.</div><div class="spec-value">512 MB</div></div>
+                <div class="spec-item"><div class="spec-label">LICENCE</div><div class="spec-value">Gratuit</div></div>
+            </div>
+
+            <!-- Changelog -->
+            <div class="changelog">
+                <div class="changelog-header">
+                    <h3>Changelog — V6.0 (falsifié je précise)</h3>
+                    <span class="badge">Dernière version</span>
+                </div>
+                <div class="changelog-body">
+                    <div class="changelog-item">
+                        <span class="cl-tag cl-new">NEW</span>
+                        <p><strong>Plugin System complet</strong> — Architecture ouverte avec API documentée pour créer vos propres extensions.</p>
+                    </div>
+                    <div class="changelog-item">
+                        <span class="cl-tag cl-new">NEW</span>
+                        <p><strong>Live Share (UI)</strong> — Édition collaborative en temps réel avec jusqu'à 8 participants simultanés.</p>
+                    </div>
+                    <div class="changelog-item">
+                        <span class="cl-tag cl-new">NEW</span>
+                        <p><strong>Performance Profiler</strong> — Analyseur de performances intégré avec flamegraph et timeline détaillée.</p>
+                    </div>
+                    <div class="changelog-item">
+                        <span class="cl-tag cl-new">NEW</span>
+                        <p><strong>Extension Marketplace</strong> — Parcourez et installez les extensions de la communauté directement dans l'IDE.</p>
+                    </div>
+                    <div class="changelog-item">
+                        <span class="cl-tag cl-new">NEW</span>
+                        <p><strong>Debugger avec Breakpoints</strong> — Débogueur complet avec inspection de variables, pile d'appels et watch expressions.</p>
+                    </div>
+                    <div class="changelog-item">
+                        <span class="cl-tag cl-imp">IMP</span>
+                        <p><strong>Autocomplete V2</strong> — Suggestions 3× plus rapides, documentation inline, support des types <code style="color:var(--accent);font-family:Space Mono,monospace;">wave</code> et <code style="color:var(--accent);font-family:Space Mono,monospace;">unit</code>.</p>
+                    </div>
+                    <div class="changelog-item">
+                        <span class="cl-tag cl-imp">IMP</span>
+                        <p><strong>6 nouveaux thèmes</strong> — Violet, Onyx, Midnight, Forest, Ember, Ocean. Tous affinés jusqu'au pixel.</p>
+                    </div>
+                    <div class="changelog-item">
+                        <span class="cl-tag cl-fix">FIX</span>
+                        <p><strong>Memory Monitor</strong> — Résolution d'un bug d'affichage sur les allocations <code style="color:var(--accent);font-family:Space Mono,monospace;">#memory=manual</code> supérieures à 4 GB.</p>
+                    </div>
+                    <div class="changelog-item">
+                        <span class="cl-tag cl-fix">FIX</span>
+                        <p><strong>Hardware autodetect</strong> — Correction de la détection des ports COM sur Windows 11 22H2.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <h2 class="footer-title">RINT<br><span>Studio V6</span></h2>
+            <p class="footer-sub">Le futur du développement bas niveau.</p>
+            <div class="footer-meta">
+                <span>© 2025 Léandro BOFFY</span>
+                <span>RINT Language</span>
+                <span>Atlas Studio</span>
+            </div>
+        </div>
+    </footer>
+
+</div>
+</div><!-- /page-download -->
+
+<script>
+    function showPage(name) {
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(p => {
+            p.classList.remove('active');
+        });
+        // Update nav
+        document.querySelectorAll('.nav-links button').forEach(b => {
+            b.classList.remove('active');
+            if (b.id !== 'nav-download') b.style.background = '';
+            if (b.id !== 'nav-download') b.style.color = '';
+        });
+
+        // Show target
+        const page = document.getElementById('page-' + name);
+        if (page) {
+            page.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        const navBtn = document.getElementById('nav-' + name);
+        if (navBtn) navBtn.classList.add('active');
+
+        // Re-trigger scroll animations
+        setTimeout(() => {
+            document.querySelectorAll('#page-' + name + ' .feat-pill, #page-' + name + ' .feat-item, #page-' + name + ' .download-card, #page-' + name + ' .info-card, #page-' + name + ' .code-card, #page-' + name + ' .spec-item').forEach((el, i) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'none';
+                setTimeout(() => {
+                    el.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.2,0.8,0.2,1)';
+                    el.style.transitionDelay = (i * 0.04) + 's';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, 60 + i * 20);
+            });
+        }, 50);
+    }
+
+    // Parallax glow on mouse
+    document.addEventListener('mousemove', (e) => {
+        const x = e.clientX / window.innerWidth;
+        const y = e.clientY / window.innerHeight;
+        document.querySelectorAll('.orb-1').forEach(o => {
+            o.style.transform = `translate(${x * 30}px, ${y * 30}px)`;
+        });
+        document.querySelectorAll('.orb-2').forEach(o => {
+            o.style.transform = `translate(${-x * 20}px, ${-y * 20}px)`;
+        });
+        // Mouse glow effect on feat-pills
+        document.querySelectorAll('.feat-pill').forEach(pill => {
+            const rect = pill.getBoundingClientRect();
+            const mx = ((e.clientX - rect.left) / rect.width * 100).toFixed(1) + '%';
+            const my = ((e.clientY - rect.top) / rect.height * 100).toFixed(1) + '%';
+            pill.style.setProperty('--mx', mx);
+            pill.style.setProperty('--my', my);
+        });
+    });
+
+    // Initial animation for home
+    window.addEventListener('load', () => {
+        showPage('home');
+    });
+</script>
+</body>
+</html>

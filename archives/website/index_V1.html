@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RINT — Le Langage du Futur</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000000;
+            --glass: rgba(22, 22, 26, 0.72);
+            --glass-light: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.07);
+            --text: #f0f0f2;
+            --muted: #6e6e73;
+            --accent: #b8f2e6;
+            --accent2: #c8b8ff;
+            --code-fg: #b8f2e6;
+            --radius: 20px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── BACKGROUND GLOW ── */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.12;
+        }
+        .orb-1 { width: 600px; height: 600px; background: #b8f2e6; top: -200px; left: -150px; animation: drift1 20s ease-in-out infinite alternate; }
+        .orb-2 { width: 500px; height: 500px; background: #c8b8ff; top: 30%; right: -200px; animation: drift2 25s ease-in-out infinite alternate; }
+        .orb-3 { width: 400px; height: 400px; background: #b8f2e6; bottom: 10%; left: 30%; animation: drift1 18s ease-in-out infinite alternate-reverse; }
+
+        @keyframes drift1 { from { transform: translate(0,0); } to { transform: translate(60px, 40px); } }
+        @keyframes drift2 { from { transform: translate(0,0); } to { transform: translate(-40px, 60px); } }
+
+        /* ── NOISE GRAIN OVERLAY ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* ── NAVBAR ── */
+        nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(90%, 900px);
+            height: 58px;
+            background: rgba(18,18,20,0.8);
+            backdrop-filter: blur(40px) saturate(160%);
+            -webkit-backdrop-filter: blur(40px) saturate(160%);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 9999;
+            box-shadow: 0 4px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .nav-logo {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .nav-logo span { color: var(--accent); }
+
+        .nav-links { display: flex; gap: 4px; }
+
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 100px;
+            transition: all 0.3s;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+
+        .nav-cta {
+            background: var(--text) !important;
+            color: var(--bg) !important;
+            font-weight: 600 !important;
+            padding: 8px 20px !important;
+        }
+
+        .nav-cta:hover { background: var(--accent) !important; }
+
+        /* ── SECTIONS COMMON ── */
+        section { position: relative; z-index: 2; }
+
+        .container {
+            width: min(90%, 960px);
+            margin: 0 auto;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 140px 0 80px;
+        }
+
+        .hero-inner {
+            width: min(90%, 960px);
+            margin: 0 auto;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(184,242,230,0.08);
+            border: 1px solid rgba(184,242,230,0.2);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            font-family: 'Space Mono', monospace;
+            animation: fadeUp 0.8s cubic-bezier(0.2,0.8,0.2,1) both;
+        }
+
+        .hero-tag::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .hero h1 {
+            font-size: clamp(48px, 8vw, 90px);
+            font-weight: 800;
+            line-height: 1.0;
+            letter-spacing: -0.03em;
+            margin-bottom: 32px;
+            animation: fadeUp 0.8s 0.1s cubic-bezier(0.2,0.8,0.2,1) both;
+        }
+
+        .hero h1 .line-accent { color: var(--accent); }
+        .hero h1 .line-dim { color: var(--muted); font-weight: 400; font-style: italic; }
+
+        .hero-sub {
+            font-size: 18px;
+            line-height: 1.7;
+            color: var(--muted);
+            max-width: 580px;
+            margin-bottom: 52px;
+            font-weight: 400;
+            animation: fadeUp 0.8s 0.2s cubic-bezier(0.2,0.8,0.2,1) both;
+        }
+
+        .hero-sub strong { color: var(--text); font-weight: 600; }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.8s 0.3s cubic-bezier(0.2,0.8,0.2,1) both;
+        }
+
+        .btn-primary {
+            background: var(--text);
+            color: var(--bg);
+            border: none;
+            padding: 16px 32px;
+            border-radius: 100px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Syne', sans-serif;
+            letter-spacing: 0.02em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(184,242,230,0.25); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 16px 32px;
+            border-radius: 100px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Syne', sans-serif;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-ghost:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.04); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Divider */
+        .divider {
+            width: min(90%, 960px);
+            margin: 0 auto;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 70%, transparent);
+        }
+
+        /* ── SECTION HEADINGS ── */
+        .section-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .section-desc {
+            font-size: 16px;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 560px;
+        }
+
+        /* ── IDE SECTION ── */
+        .ide-section { padding: 120px 0; }
+
+        .ide-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+            margin-top: 64px;
+        }
+
+        .features-list { display: flex; flex-direction: column; gap: 20px; }
+
+        .feat-item {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feat-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(184,242,230,0.3), transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .feat-item:hover { border-color: rgba(184,242,230,0.2); transform: translateX(4px); }
+        .feat-item:hover::before { opacity: 1; }
+
+        .feat-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: rgba(184,242,230,0.1);
+            border: 1px solid rgba(184,242,230,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            margin-bottom: 14px;
+        }
+
+        .feat-item h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .feat-item p {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* IDE Preview Window */
+        .ide-window {
+            background: rgba(10,10,12,0.95);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+        }
+
+        .ide-titlebar {
+            background: rgba(30,30,32,0.8);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-r { background: #ff5f56; }
+        .dot-y { background: #ffbd2e; }
+        .dot-g { background: #27c93f; }
+
+        .ide-filename {
+            margin-left: 8px;
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .ide-body {
+            padding: 24px;
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--muted);
+        }
+
+        .ln { color: rgba(255,255,255,0.15); margin-right: 20px; user-select: none; font-size: 11px; }
+        .kw { color: #c8b8ff; }
+        .fn { color: #b8f2e6; }
+        .str { color: #f9c74f; }
+        .cm { color: rgba(255,255,255,0.2); font-style: italic; }
+        .num { color: #ff8fab; }
+
+        .ide-statusbar {
+            background: rgba(184,242,230,0.08);
+            border-top: 1px solid rgba(184,242,230,0.1);
+            padding: 8px 16px;
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            display: flex;
+            gap: 20px;
+        }
+
+        /* ── SHOWCASE SECTION ── */
+        .showcase-section { padding: 80px 0 120px; }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 64px;
+        }
+
+        .code-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s;
+        }
+
+        .code-card:hover { border-color: rgba(184,242,230,0.15); transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+
+        .code-card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .code-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            padding: 3px 10px;
+            border-radius: 100px;
+            background: rgba(184,242,230,0.1);
+            color: var(--accent);
+            border: 1px solid rgba(184,242,230,0.15);
+        }
+
+        .code-block {
+            padding: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 12.5px;
+            line-height: 1.8;
+            color: var(--muted);
+            overflow-x: auto;
+        }
+
+        /* ── HARDWARE SECTION ── */
+        .hardware-section { padding: 80px 0 120px; }
+
+        .hw-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+            margin-top: 64px;
+        }
+
+        .hw-visual {
+            position: relative;
+        }
+
+        .hw-board {
+            background: rgba(10,10,12,0.9);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .hw-info-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .info-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 24px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .info-icon {
+            font-size: 20px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .info-card h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .info-card p {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            position: relative;
+            z-index: 2;
+            border-top: 1px solid var(--border);
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .footer-title {
+            font-size: clamp(32px, 5vw, 56px);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+        }
+
+        .footer-title span { color: var(--accent); }
+
+        .footer-sub {
+            font-size: 16px;
+            color: var(--muted);
+            margin-bottom: 40px;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--text);
+            color: var(--bg);
+            border: none;
+            padding: 18px 40px;
+            border-radius: 100px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Syne', sans-serif;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            background: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(184,242,230,0.3);
+        }
+
+        .download-btn .icon { font-size: 18px; }
+
+        .footer-note {
+            margin-top: 24px;
+            font-size: 13px;
+            color: var(--muted);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .footer-meta {
+            margin-top: 60px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            font-size: 13px;
+            color: rgba(110,110,115,0.5);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .ide-layout, .showcase-grid, .hw-layout { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .hero h1 { font-size: 44px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Background Orbs -->
+<div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+    <div class="nav-logo">R<span>INT</span></div>
+    <div class="nav-links">
+        <a href="#ide">IDE</a>
+        <a href="#showcase">Syntaxe</a>
+        <a href="#hardware">Hardware</a>
+        <a href="#footer" class="nav-cta">Télécharger</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-tag">V3.5 — Now Available</div>
+        <h1>
+            Le Langage.<br>
+            <span class="line-accent">L'IDE.</span><br>
+            <span class="line-dim">L'Écosystème.</span>
+        </h1>
+        <p class="hero-sub">
+            Maîtrisez l'informatique de bas niveau avec la <strong>fluidité du futur</strong>. Gérez votre mémoire, virtualisez vos systèmes et pilotez votre hardware dans un environnement conçu pour la performance.
+        </p>
+        <div class="hero-actions">
+            <a href="#footer" class="btn-primary">Télécharger Rint Studio</a>
+            <a href="#showcase" class="btn-ghost">Voir la syntaxe →</a>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- IDE SECTION -->
+<section class="ide-section" id="ide">
+    <div class="container">
+        <div class="section-tag">// RINT STUDIO</div>
+        <h2 class="section-title">Une interface qui<br>redéfinit l'élégance.</h2>
+        <p class="section-desc">Inspiré par les meilleurs outils de JetBrains, RINT Studio offre une fluidité totale. Moins de lignes, plus de puissance.</p>
+
+        <div class="ide-layout">
+            <!-- Features -->
+            <div class="features-list">
+                <div class="feat-item">
+                    <div class="feat-icon">⚡</div>
+                    <h3>Analyseur Statique</h3>
+                    <p>Détectez vos erreurs avant même d'exécuter. Le compilateur raisonne pour vous, en temps réel.</p>
+                </div>
+                <div class="feat-item">
+                    <div class="feat-icon">🔬</div>
+                    <h3>Memory Live Watch</h3>
+                    <p>Observez chaque octet alloué en temps réel. Pile, tas, pointeurs — tout est visible, rien ne vous échappe.</p>
+                </div>
+                <div class="feat-item">
+                    <div class="feat-icon">🔀</div>
+                    <h3>Multi-Engine</h3>
+                    <p>Passez de la simulation Turtle au pilotage de drones Voltige en un clic. Un environnement, tous les usages.</p>
+                </div>
+                <div class="feat-item" style="background: rgba(184,242,230,0.04); border-color: rgba(184,242,230,0.12);">
+                    <div class="feat-icon" style="background: rgba(184,242,230,0.15);">✦</div>
+                    <h3 style="color: var(--accent);">V3.5 — La mise à jour</h3>
+                    <p>Notre V3.5 réduit la complexité pour laisser place à la créativité. Moins de boilerplate, plus de puissance expressive.</p>
+                </div>
+            </div>
+
+            <!-- IDE Preview -->
+            <div class="ide-window">
+                <div class="ide-titlebar">
+                    <div class="dot dot-r"></div>
+                    <div class="dot dot-y"></div>
+                    <div class="dot dot-g"></div>
+                    <span class="ide-filename">main.rint</span>
+                </div>
+                <div class="ide-body">
+                    <div><span class="ln">1</span><span class="cm">// RINT Studio V3.5</span></div>
+                    <div><span class="ln">2</span><span class="kw">use</span> <span class="fn">System</span>(*)</div>
+                    <div><span class="ln">3</span><span class="kw">use</span> <span class="fn">Audio</span>(*)</div>
+                    <div><span class="ln">4</span>&nbsp;</div>
+                    <div><span class="ln">5</span><span class="cm">// Types natifs Rint</span></div>
+                    <div><span class="ln">6</span><span class="kw">bool</span> active = <span class="num">true</span></div>
+                    <div><span class="ln">7</span><span class="kw">wave</span> band1 = Audio.<span class="fn">load</span>(path=<span class="str">""</span>)</div>
+                    <div><span class="ln">8</span><span class="kw">unit</span> vitesse = <span class="str">"km:100"</span></div>
+                    <div><span class="ln">9</span>&nbsp;</div>
+                    <div><span class="ln">10</span><span class="kw">list</span> notes = [<span class="str">"F#"</span>, <span class="str">"C#"</span>, <span class="str">"A.3"</span>]</div>
+                    <div><span class="ln">11</span><span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Rint est prêt."</span>)</div>
+                </div>
+                <div class="ide-statusbar">
+                    <span>✓ 0 erreur</span>
+                    <span>⚡ 3 ms</span>
+                    <span>● Memory: 0.2 KB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SHOWCASE SECTION -->
+<section class="showcase-section" id="showcase">
+    <div class="container">
+        <div class="section-tag">// PUISSANCE TECHNIQUE</div>
+        <h2 class="section-title">Rint parle le langage<br>des machines.</h2>
+        <p class="section-desc">Deux exemples concrets qui montrent pourquoi Rint est sérieux. Virtualisation, mémoire manuelle — le contrôle total.</p>
+
+        <div class="showcase-grid">
+            <!-- Card 1: Virtualisation -->
+            <div class="code-card">
+                <div class="code-card-header">
+                    <div class="code-card-title">
+                        🖥 Virtualisation & Sécurité
+                    </div>
+                    <span class="badge">SYS</span>
+                </div>
+                <div class="code-block">
+<span class="cm">// Environnements isolés pour vos tests</span>
+<span class="kw">sys</span> PC_Eleve = System.<span class="fn">virtual.new</span>(
+    ram=<span class="str">"mb:16"</span>,
+    cpu=<span class="str">"core:1"</span>
+)
+
+PC_Eleve.<span class="fn">virtual.config</span>(
+    priority=<span class="str">"low"</span>,
+    auto_reboot=<span class="num">true</span>
+)
+
+PC_Eleve.<span class="fn">run</span>() {
+    <span class="fn">console.log</span>(<span class="str">"Système isolé..."</span>)
+}
+                </div>
+            </div>
+
+            <!-- Card 2: Mémoire -->
+            <div class="code-card">
+                <div class="code-card-header">
+                    <div class="code-card-title">
+                        🧠 Gestion Mémoire Manuelle
+                    </div>
+                    <span class="badge">MEM</span>
+                </div>
+                <div class="code-block">
+<span class="cm">#memory=manual</span>
+<span class="cm">// Contrôle total sur la pile et le tas</span>
+
+<span class="fn">alloc</span>(
+    type=<span class="str">"stack"</span>,
+    name=<span class="str">"buffer"</span>,
+    size=<span class="str">"bit:32"</span>
+) <span class="kw">string</span> data = <span class="str">"RINT"</span>
+
+<span class="fn">memcpy</span>(data <span class="kw">to</span> backup)
+<span class="fn">realloc</span>(name=<span class="str">"buffer"</span>, size=<span class="str">"bit:64"</span>)
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HARDWARE SECTION -->
+<section class="hardware-section" id="hardware">
+    <div class="container">
+        <div class="section-tag">// HARDWARE & ROBOTIQUE</div>
+        <h2 class="section-title">Du code au monde réel.</h2>
+
+        <div class="hw-layout">
+            <div class="hw-info-cards">
+                <p class="section-desc" style="margin-bottom: 24px;">Que vous soyez sur Arduino ou sur un drone Voltige, Rint parle le langage des machines. Nos bibliothèques natives interagissent avec vos périphériques sans friction.</p>
+
+                <div class="info-card">
+                    <div class="info-icon">🤖</div>
+                    <div>
+                        <h4>Arduino & Microcontrôleurs</h4>
+                        <p>Bibliothèques natives pour GPIO, I²C, UART. Zéro overhead, contrôle direct.</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">🚁</div>
+                    <div>
+                        <h4>Drone Voltige</h4>
+                        <p>Intégration native avec le système VOLTIGE VTOL. Protocoles de vol, capteurs, télémétrie.</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">🔌</div>
+                    <div>
+                        <h4>Auto-détection des ports</h4>
+                        <p>Le runtime Rint détecte automatiquement vos périphériques connectés. Plug & code.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hardware code window -->
+            <div class="ide-window">
+                <div class="ide-titlebar">
+                    <div class="dot dot-r"></div>
+                    <div class="dot dot-y"></div>
+                    <div class="dot dot-g"></div>
+                    <span class="ide-filename">hardware.rint</span>
+                </div>
+                <div class="ide-body">
+                    <div><span class="ln">1</span><span class="kw">use</span> <span class="fn">hardware</span>() <span class="kw">as</span> hard()</div>
+                    <div><span class="ln">2</span>&nbsp;</div>
+                    <div><span class="ln">3</span>hardware.<span class="fn">new</span>(</div>
+                    <div><span class="ln">4</span>&nbsp;&nbsp;board=<span class="str">"arduino"</span>,</div>
+                    <div><span class="ln">5</span>&nbsp;&nbsp;model=<span class="str">"uno"</span>,</div>
+                    <div><span class="ln">6</span>&nbsp;&nbsp;name=<span class="str">"super_projet"</span></div>
+                    <div><span class="ln">7</span>)</div>
+                    <div><span class="ln">8</span>hardware.<span class="fn">config</span>(</div>
+                    <div><span class="ln">9</span>&nbsp;&nbsp;port=hardware.port.<span class="fn">autodetect</span>()</div>
+                    <div><span class="ln">10</span>)</div>
+                    <div><span class="ln">11</span>&nbsp;</div>
+                    <div><span class="ln">12</span><span class="kw">when</span> hard.<span class="fn">read</span>(pin=<span class="num">9</span>) == <span class="num">true</span> {</div>
+                    <div><span class="ln">13</span>&nbsp;&nbsp;hard.<span class="fn">set</span>(pin=<span class="num">10</span>, digit=<span class="num">true</span>)</div>
+                    <div><span class="ln">14</span>&nbsp;&nbsp;<span class="fn">console.log</span>(<span class="str">"Capteur activé !"</span>)</div>
+                    <div><span class="ln">15</span>}</div>
+                </div>
+                <div class="ide-statusbar">
+                    <span>✓ Connecté — COM3</span>
+                    <span>⚡ Arduino UNO</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER / CTA -->
+<footer id="footer">
+    <div class="container">
+        <div class="section-tag" style="justify-content: center; display: flex; margin-bottom: 20px;">// GET STARTED</div>
+        <h2 class="footer-title">Prêt à passer au<br>niveau <span>supérieur</span> ?</h2>
+        <p class="footer-sub">Rint Studio V3.5 — Windows. Gratuit. Puissant.</p>
+        <a href="#" class="download-btn">
+            <span class="icon">⬇</span>
+            Télécharger .exe — V3.5
+        </a>
+        <p class="footer-note">Windows 10/11 · x64 · ~48 MB</p>
+        <div class="footer-meta">
+            <span>© 2025 Léandro BOFFY</span>
+            <span>RINT Language</span>
+            <span>ATLAS - Studios</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Smooth reveal on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'fadeUp 0.7s cubic-bezier(0.2,0.8,0.2,1) both';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.feat-item, .code-card, .info-card, .ide-window, .hw-board').forEach(el => {
+        el.style.opacity = '0';
+        observer.observe(el);
+    });
+</script>
+</body>
+</html>
